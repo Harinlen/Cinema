@@ -15,24 +15,44 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#ifndef KNPLUGINMANAGER_H
+#define KNPLUGINMANAGER_H
 
-#include <QMainWindow>
+#include <QObject>
 
-class MainWindow : public QMainWindow
+class KNMainWindow;
+class KNPluginManager : public QObject
 {
     Q_OBJECT
 public:
     /*!
-     * \brief Construct a MainWindow widget.
-     * \param parent The parent widget.
+     * \brief Construct a KNPluginManager object.
+     * \param parent The parent object.
      */
-    explicit MainWindow(QWidget *parent = nullptr);
+    explicit KNPluginManager(QObject *parent = nullptr);
 
 signals:
 
 public slots:
+    /*!
+     * \brief Set the global main window.
+     * \param mainWindow The main window pointer.
+     */
+    void setMainWindow(KNMainWindow *mainWindow);
+
+    /*!
+     * \brief Start the application.
+     */
+    void launchApplication();
+
+    /*!
+     * \brief Save all the configurations.
+     */
+    void saveConfigure();
+
+private:
+    inline void setApplicationInformation();
+    KNMainWindow *m_mainWindow;
 };
 
-#endif // MAINWINDOW_H
+#endif // KNPLUGINMANAGER_H

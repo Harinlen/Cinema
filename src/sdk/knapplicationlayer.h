@@ -15,10 +15,30 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-#include "mainwindow.h"
+#ifndef KNAPPLICATIONLAYER_H
+#define KNAPPLICATIONLAYER_H
 
-MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
+#include <QWidget>
+
+/*!
+ * \brief The KNApplicationLayer class provides the layer for application to
+ * draw the application data.
+ */
+class KNApplicationLayer : public QWidget
 {
-    // Set property.
-    setWindowState(Qt::WindowFullScreen);
-}
+    Q_OBJECT
+public:
+    /*!
+     * \brief Construct a KNApplicationLayer widget.
+     * \param parent The parent widget.
+     */
+    explicit KNApplicationLayer(QWidget *parent = nullptr);
+
+signals:
+
+public slots:
+
+private:
+};
+
+#endif // KNAPPLICATIONLAYER_H

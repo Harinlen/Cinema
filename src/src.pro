@@ -2,7 +2,9 @@ QT += \
     core \
     gui \
     widgets \
-    network
+    network \
+    multimedia \
+    multimediawidgets
 
 CONFIG += c++17
 
@@ -24,10 +26,38 @@ SOURCES += \
     sdk/knsingletonapplication.cpp \
     sdk/knlocalpeer.cpp \
     sdk/knlockedfile.cpp \
-    ui/mainwindow.cpp
+    core/knpluginmanager.cpp \
+    sdk/knmainwindow.cpp \
+    sdk/knglobal.cpp \
+    sdk/knconfigure.cpp \
+    sdk/knconfiguremanager.cpp \
+    sdk/knfontmanager.cpp \
+    sdk/knlocalemanager.cpp \
+    sdk/knthememanager.cpp \
+    sdk/kndpimanager.cpp \
+    sdk/knutil.cpp \
+    sdk/knapplicationlayer.cpp \
+    sdk/knbootlayer.cpp \
+    sdk/knaudiomanager.cpp
 
 HEADERS += \
     sdk/knsingletonapplication.h \
     sdk/knlocalpeer.h \
     sdk/knlockedfile.h \
-    ui/mainwindow.h
+    core/knpluginmanager.h \
+    sdk/knmainwindow.h \
+    sdk/knglobal.h \
+    sdk/knconfigure.h \
+    sdk/knconfiguremanager.h \
+    sdk/knfontmanager.h \
+    sdk/knlocalemanager.h \
+    sdk/knthememanager.h \
+    sdk/kndpimanager.h \
+    sdk/knutil.h \
+    sdk/knversion.h \
+    sdk/knapplicationlayer.h \
+    sdk/knbootlayer.h \
+    sdk/knaudiomanager.h
+
+RESOURCES += \
+    resource/resource.qrc
