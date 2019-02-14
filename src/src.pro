@@ -38,7 +38,19 @@ SOURCES += \
     sdk/knutil.cpp \
     sdk/knapplicationlayer.cpp \
     sdk/knbootlayer.cpp \
-    sdk/knaudiomanager.cpp
+    sdk/knaudiomanager.cpp \
+    sdk/knbackground.cpp \
+    sdk/knmainapplicationheader.cpp \
+    sdk/kntextclock.cpp \
+    sdk/knhwidgetswitcher.cpp \
+    sdk/knwidgetswitcher.cpp \
+    plugin/knappchapterselector/knappchapterselector.cpp \
+    plugin/knappchapterselector/knchaptermodel.cpp \
+    plugin/knappchapterselector/knproxychaptermodel.cpp \
+    plugin/knappchapterselector/knchaptersearcher.cpp \
+    plugin/knappchapterselector/knchapterutil.cpp \
+    sdk/knmenulayer.cpp \
+    sdk/knclocklabel.cpp
 
 HEADERS += \
     sdk/knsingletonapplication.h \
@@ -57,7 +69,22 @@ HEADERS += \
     sdk/knversion.h \
     sdk/knapplicationlayer.h \
     sdk/knbootlayer.h \
-    sdk/knaudiomanager.h
+    sdk/knaudiomanager.h \
+    sdk/knbackground.h \
+    sdk/knmainapplicationheader.h \
+    sdk/kntextclock.h \
+    sdk/knhwidgetswitcher.h \
+    sdk/knwidgetswitcher.h \
+    plugin/knappchapterselector/knappchapterselector.h \
+    plugin/knappchapterselector/knchaptermodel.h \
+    plugin/knappchapterselector/knproxychaptermodel.h \
+    plugin/knappchapterselector/knchaptersearcher.h \
+    plugin/knappchapterselector/knchapterutil.h \
+    sdk/knmenulayer.h \
+    sdk/knclocklabel.h
 
 RESOURCES += \
     resource/resource.qrc
+
+DISTFILES += \
+    resource/default_font.json

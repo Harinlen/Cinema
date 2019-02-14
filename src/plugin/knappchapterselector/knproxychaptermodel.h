@@ -15,49 +15,40 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-#ifndef KNPLUGINMANAGER_H
-#define KNPLUGINMANAGER_H
+#ifndef KNPROXYCHAPTERMODEL_H
+#define KNPROXYCHAPTERMODEL_H
 
-#include <QObject>
+#include <QSortFilterProxyModel>
 
-class KNMainWindow;
-class KNPluginManager : public QObject
+/*!
+ * \brief The KNProxyChapterModel class provides a class for sort and search the
+ * chapter model data.
+ */
+class KNProxyChapterModel : public QSortFilterProxyModel
 {
     Q_OBJECT
 public:
-    /*!
-     * \brief Construct a KNPluginManager object.
-     * \param parent The parent object.
-     */
-    explicit KNPluginManager(QObject *parent = nullptr);
+    explicit KNProxyChapterModel(QObject *parent = nullptr);
 
 signals:
 
 public slots:
+
+protected:
     /*!
-     * \brief Set the global main window.
-     * \param mainWindow The main window pointer.
+     * \brief Reimplemented from QSortFilterProxyModel::lessThan().
      */
-    void setMainWindow(KNMainWindow *mainWindow);
+    bool lessThan(const QModelIndex &source_left,
+                  const QModelIndex &source_right) const override;
 
     /*!
-     * \brief Load all the plugins.
+     * \brief Reimplemented from QSortFilterProxyModel::filterAcceptsRow().
      */
-    void loadPlugins();
-
-    /*!
-     * \brief Start the application.
-     */
-    void launchApplication();
-
-    /*!
-     * \brief Save all the configurations.
-     */
-    void saveConfigure();
+    bool filterAcceptsRow(int source_row,
+                          const QModelIndex &source_parent) const override;
 
 private:
-    inline void setApplicationInformation();
-    KNMainWindow *m_mainWindow;
+    QString m_keyword;
 };
 
-#endif // KNPLUGINMANAGER_H
+#endif // KNPROXYCHAPTERMODEL_H

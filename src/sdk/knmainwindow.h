@@ -21,6 +21,9 @@
 #include <QMainWindow>
 
 class QLabel;
+class KNBackground;
+class KNApplicationLayer;
+class KNMenuLayer;
 class KNBootLayer;
 class KNConfigure;
 /*!
@@ -44,11 +47,6 @@ signals:
 
 
 public slots:
-    /*!
-     * \brief Set the background according to the file path.
-     * \param filePath The file path.
-     */
-    void setBackground(const QString &filePath);
 
 protected:
     /*!
@@ -67,15 +65,15 @@ protected:
     void closeEvent(QCloseEvent *event) override;
 
     /*!
-     * \brief keyPressEvent
-     * \param event
+     * \brief Reimplemented from QMainWindow::keyPressEvent().
      */
     void keyPressEvent(QKeyEvent *event) override;
 
 private:
-    inline void loadDefaultBackground();
     KNConfigure *m_configure;
-    QLabel *m_background;
+    KNBackground *m_background;
+    KNApplicationLayer *m_applicationLayer;
+    KNMenuLayer *m_menuLayer;
     KNBootLayer *m_bootLayer;
 };
 

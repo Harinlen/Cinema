@@ -15,49 +15,49 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-#ifndef KNPLUGINMANAGER_H
-#define KNPLUGINMANAGER_H
+#ifndef KNCLOCKLABEL_H
+#define KNCLOCKLABEL_H
 
-#include <QObject>
+#include <QWidget>
 
-class KNMainWindow;
-class KNPluginManager : public QObject
+/*!
+ * \brief The KNClockLabel class provides the clock that would update every
+ * second.
+ */
+class KNClockLabel : public QWidget
 {
     Q_OBJECT
 public:
     /*!
-     * \brief Construct a KNPluginManager object.
-     * \param parent The parent object.
+     * \brief Construct a KNClockLabel widget.
+     * \param parent The parent widget.
      */
-    explicit KNPluginManager(QObject *parent = nullptr);
+    explicit KNClockLabel(QWidget *parent = nullptr);
+
+    /*!
+     * \brief Reimplemented from QWidget::setFont().
+     */
+    void setFont(const QFont &font);
 
 signals:
 
 public slots:
     /*!
-     * \brief Set the global main window.
-     * \param mainWindow The main window pointer.
+     * \brief Update the font size according to the current font.
      */
-    void setMainWindow(KNMainWindow *mainWindow);
+    void updateFontSize();
 
+protected:
     /*!
-     * \brief Load all the plugins.
+     * \brief Reimplemented from QWidget::paintEvent().
      */
-    void loadPlugins();
-
-    /*!
-     * \brief Start the application.
-     */
-    void launchApplication();
-
-    /*!
-     * \brief Save all the configurations.
-     */
-    void saveConfigure();
+    void paintEvent(QPaintEvent *event) override;
 
 private:
-    inline void setApplicationInformation();
-    KNMainWindow *m_mainWindow;
+    inline QString getCurrentTime();
+    QTimer *m_clockUpdate;
+    int m_numWidth, m_numHeight;
+    bool m_12hour;
 };
 
-#endif // KNPLUGINMANAGER_H
+#endif // KNCLOCKLABEL_H

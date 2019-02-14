@@ -29,18 +29,18 @@
 
 #include <QDebug>
 
-KNFontManager *KNFontManager::m_instance=nullptr;
+KNFontManager *KNFontManager::ins=nullptr;
 
 KNFontManager *KNFontManager::instance()
 {
-    return m_instance;
+    return ins;
 }
 
 void KNFontManager::initial(QObject *parent)
 {
-    if(m_instance==nullptr)
+    if(ins==nullptr)
     {
-        m_instance=new KNFontManager(parent);
+        ins=new KNFontManager(parent);
     }
 }
 
@@ -100,7 +100,7 @@ void KNFontManager::loadDefaultFont()
         //Prepare the font config.
         QJsonObject fontConfig;
         //Get the default font configuration file.
-        QFile defaultFontFile(":/public/default_font.json");
+        QFile defaultFontFile(":/default_font.json");
         //Open the file in readonly mode.
         if(defaultFontFile.open(QIODevice::ReadOnly))
         {

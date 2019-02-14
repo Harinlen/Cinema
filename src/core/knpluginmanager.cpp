@@ -48,6 +48,11 @@ void KNPluginManager::setMainWindow(KNMainWindow *mainWindow)
     }
 }
 
+void KNPluginManager::loadPlugins()
+{
+    ;
+}
+
 void KNPluginManager::launchApplication()
 {
     //Show the main window.

@@ -15,49 +15,27 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-#ifndef KNPLUGINMANAGER_H
-#define KNPLUGINMANAGER_H
+#ifndef KNTEXTCLOCK_H
+#define KNTEXTCLOCK_H
 
-#include <QObject>
+#include <QWidget>
 
-class KNMainWindow;
-class KNPluginManager : public QObject
+/*!
+ * \brief The KNTextClock class provides a texture clock.
+ */
+class KNTextClock : public QWidget
 {
     Q_OBJECT
 public:
     /*!
-     * \brief Construct a KNPluginManager object.
-     * \param parent The parent object.
+     * \brief Construct a KNTextClock widget.
+     * \param parent The parent widget.
      */
-    explicit KNPluginManager(QObject *parent = nullptr);
+    explicit KNTextClock(QWidget *parent = nullptr);
 
 signals:
 
 public slots:
-    /*!
-     * \brief Set the global main window.
-     * \param mainWindow The main window pointer.
-     */
-    void setMainWindow(KNMainWindow *mainWindow);
-
-    /*!
-     * \brief Load all the plugins.
-     */
-    void loadPlugins();
-
-    /*!
-     * \brief Start the application.
-     */
-    void launchApplication();
-
-    /*!
-     * \brief Save all the configurations.
-     */
-    void saveConfigure();
-
-private:
-    inline void setApplicationInformation();
-    KNMainWindow *m_mainWindow;
 };
 
-#endif // KNPLUGINMANAGER_H
+#endif // KNTEXTCLOCK_H

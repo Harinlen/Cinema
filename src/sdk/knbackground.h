@@ -15,36 +15,43 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-#ifndef KNAPPLICATIONLAYER_H
-#define KNAPPLICATIONLAYER_H
+#ifndef KNBACKGROUND_H
+#define KNBACKGROUND_H
 
-#include <QWidget>
+#include <QGraphicsView>
 
-class QPropertyAnimation;
-class QParallelAnimationGroup;
-class KNHWidgetSwitcher;
-class KNMainApplicationHeader;
+class QLabel;
+class QGraphicsVideoItem;
+class QMediaPlayer;
+class QMediaPlaylist;
 /*!
- * \brief The KNApplicationLayer class provides the layer for application to
- * draw the application data.
+ * \brief The KNBackground class provides the ability for displaying an image or
+ * a video as the background.
  */
-class KNApplicationLayer : public QWidget
+class KNBackground : public QGraphicsView
 {
     Q_OBJECT
 public:
     /*!
-     * \brief Construct a KNApplicationLayer widget.
+     * \brief Construct a KNBackground widget.
      * \param parent The parent widget.
      */
-    explicit KNApplicationLayer(QWidget *parent = nullptr);
+    explicit KNBackground(QWidget *parent = nullptr);
 
 signals:
 
 public slots:
     /*!
-     * \brief When the layer is shown, this animation will be executed.
+     * \brief Set background as a static image.
+     * \param image The target image.
      */
-    void showAnimation();
+    void setBackground(const QPixmap &image);
+
+    /*!
+     * \brief Set the background as a video.
+     * \param videoPath The target video path.
+     */
+    void setBackground(const QString &videoPath);
 
 protected:
     /*!
@@ -53,13 +60,11 @@ protected:
     void resizeEvent(QResizeEvent *event) override;
 
 private:
-    inline void setRange(QPropertyAnimation *animation,
-                         const QPoint &start, const QPoint &end);
-    inline QPropertyAnimation *generateAnimation(QWidget *target);
-    KNHWidgetSwitcher *m_container;
-    KNMainApplicationHeader *m_header;
-    QPropertyAnimation *m_headerAnimation, *m_containerAnimation;
-    QParallelAnimationGroup *m_showAnimation;
+    QGraphicsScene *m_scene;
+    QGraphicsVideoItem *m_videoDisplay;
+    QLabel *m_imageDisplay;
+    QMediaPlaylist *m_videoLoopList;
+    QMediaPlayer *m_videoPlayer;
 };
 
-#endif // KNAPPLICATIONLAYER_H
+#endif // KNBACKGROUND_H

@@ -23,54 +23,58 @@
 #include "knglobal.h"
 #include "kndpimanager.h"
 #include "knbootlayer.h"
+#include "knapplicationlayer.h"
+#include "knmenulayer.h"
+#include "knbackground.h"
 
 #include "knmainwindow.h"
 
 #include <QDebug>
 
-#define KeyBackground "Background"
+#define KeyBackground       "Background"
+#define KeyBackgroundVideo  "BackgroundVideo"
 
 KNMainWindow::KNMainWindow(QWidget *parent) : QMainWindow(parent),
-    m_background(new QLabel(this)),
-    m_bootLayer(new KNBootLayer(this))
+    m_background(nullptr),
+    m_applicationLayer(nullptr),
+    m_menuLayer(nullptr),
+    m_bootLayer(nullptr)
 {
     setObjectName("MainWindow");
+    setFocusPolicy(Qt::StrongFocus);
     //Set the DPI of the main window to the DPI manager.
     knDpi->setDpi(logicalDpiX(), logicalDpiY());
+    //Set properties.
+    setWindowState(Qt::WindowFullScreen);
+    raise();
+    //Load the layer.
+    m_background=new KNBackground(this);
+    m_applicationLayer=new KNApplicationLayer(this);
+    m_menuLayer=new KNMenuLayer(this);
+    m_bootLayer=new KNBootLayer(this);
+    //Configure the boot layer.
+    connect(m_bootLayer, &KNBootLayer::requireStartup,
+            m_applicationLayer, &KNApplicationLayer::showAnimation);
+    //Configure the applicaiton layer.
+    m_applicationLayer->setFocusProxy(this);
     //Get the configure.
     m_configure=knGlobal->userConfigure()->getConfigure(objectName());
-    // Set properties.
-    setWindowState(Qt::WindowFullScreen);
-    //Configure the background image.
-    m_background->setFocusProxy(this);
-    m_background->setScaledContents(true);
-    //Load the default background.
-    loadDefaultBackground();
-    //Load the configure.
-    setBackground(m_configure->data(KeyBackground, "").toString());
+    //Restore the background.
+    if(m_configure->data(KeyBackgroundVideo, false).toBool())
+    {
+        //Is a video, set the background as video.
+        m_background->setBackground(
+                    m_configure->data(KeyBackground).toString());
+    }
+    else
+    {
+        //Is an image, set the background as image.
+        m_background->setBackground(
+                    QPixmap(m_configure->data(KeyBackground).toString()));
+    }
 
     //Configure the boot layer.
     m_bootLayer->setFocusProxy(this);
-}
-
-void KNMainWindow::setBackground(const QString &filePath)
-{
-    // - Assume that there is always a background is valid before set.
-    //Check the file exist.
-    if(QFileInfo(filePath).exists())
-    {
-        //Load the background as pixmap.
-        QPixmap backgroundImage(filePath);
-        if(filePath.isNull())
-        {
-            //Invalid image, do not save the settings.
-            return;
-        }
-        //Set the background.
-        m_background->setPixmap(backgroundImage);
-        //Save the configure.
-        m_configure->setData(KeyBackground, filePath);
-    }
 }
 
 void KNMainWindow::resizeEvent(QResizeEvent *event)
@@ -78,8 +82,13 @@ void KNMainWindow::resizeEvent(QResizeEvent *event)
     //Update the main window.
     QMainWindow::resizeEvent(event);
     //Update the label size.
-    m_background->resize(width(), height());
-    m_bootLayer->resize(width(), height());
+    if(m_background)
+    {
+        m_background->resize(width(), height());
+        m_applicationLayer->resize(width(), height());
+        m_menuLayer->resize(width(), height());
+        m_bootLayer->resize(width(), height());
+    }
 }
 
 void KNMainWindow::showEvent(QShowEvent *event)
@@ -104,12 +113,21 @@ void KNMainWindow::closeEvent(QCloseEvent *event)
 
 void KNMainWindow::keyPressEvent(QKeyEvent *event)
 {
-
-//    event->accept();
-}
-
-inline void KNMainWindow::loadDefaultBackground()
-{
-    // The default image background is the one which contains in resource file.
-    m_background->setPixmap(QPixmap(":/background.png"));
+    switch(event->key())
+    {
+    case Qt::Key_QuoteLeft:
+        //Check the menu layer state.
+        if(!m_menuLayer->isVisible())
+        {
+            //Show the menu.
+            m_menuLayer->setGeometry(rect());
+            m_menuLayer->showMenu();
+            m_menuLayer->show();
+            event->accept();
+        }
+        break;
+    default:
+        event->ignore();
+        break;
+    }
 }

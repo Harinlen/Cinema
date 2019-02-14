@@ -15,9 +15,66 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
+#include <QParallelAnimationGroup>
+#include <QPropertyAnimation>
+
+#include "knhwidgetswitcher.h"
+#include "knmainapplicationheader.h"
+#include "kndpimanager.h"
+
 #include "knapplicationlayer.h"
 
-KNApplicationLayer::KNApplicationLayer(QWidget *parent) : QWidget(parent)
+KNApplicationLayer::KNApplicationLayer(QWidget *parent) : QWidget(parent),
+    m_container(new KNHWidgetSwitcher(this)),
+    m_header(new KNMainApplicationHeader(this)),
+    m_headerAnimation(generateAnimation(m_header)),
+    m_containerAnimation(generateAnimation(m_container)),
+    m_showAnimation(new QParallelAnimationGroup(this))
 {
-    ;
+    //Update the header height.
+    m_header->setFixedHeight(knDpi->height(150));
+    m_header->setFocusProxy(parentWidget());
+    m_header->hide();
+    //Add the animation to the group.
+    m_showAnimation->addAnimation(m_headerAnimation);
+    m_showAnimation->addAnimation(m_containerAnimation);
+}
+
+void KNApplicationLayer::showAnimation()
+{
+    //Set the header animation position.
+    setRange(m_headerAnimation,
+             QPoint(0, -m_header->height()), QPoint(0, 0));
+    setRange(m_containerAnimation,
+             QPoint(0, height()), QPoint(0, m_header->height()));
+    //Show the animation.
+    m_showAnimation->start();
+}
+
+void KNApplicationLayer::resizeEvent(QResizeEvent *event)
+{
+    //Resize the widget.
+    QWidget::resizeEvent(event);
+    //Resize the header.
+    m_header->resize(width(), m_header->height());
+    m_container->resize(width(), height()-m_header->height());
+}
+
+inline void KNApplicationLayer::setRange(QPropertyAnimation *animation,
+                                         const QPoint &start, const QPoint &end)
+{
+    animation->setStartValue(start);
+    animation->setEndValue(end);
+    //Configure the widget start position.
+    QWidget *targetWidget=static_cast<QWidget *>(animation->targetObject());
+    targetWidget->move(start);
+    targetWidget->show();
+}
+
+inline QPropertyAnimation *KNApplicationLayer::generateAnimation(
+        QWidget *target)
+{
+    QPropertyAnimation *animation=new QPropertyAnimation(target, "pos", this);
+    animation->setEasingCurve(QEasingCurve::OutCubic);
+    return animation;
 }

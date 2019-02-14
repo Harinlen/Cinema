@@ -46,7 +46,7 @@ public:
      * object.\n
      * Only the first time will create a instance.
      */
-    static void initial(QObject *parent = 0);
+    static void initial(QObject *parent = nullptr);
 
     /*!
      * \brief Load all the font in from a folder. Notice: this function won't
@@ -90,18 +90,17 @@ public:
      * this parameter is 12.
      */
     void setGlobalFont(const QString &fontName=QString(),
-                       int pixelSize=12);
+                       int pixelSize=24);
 
 signals:
 
 public slots:
 
 private:
-    explicit KNFontManager(QObject *parent = 0);
-    //Disable the copy of the instance.
+    explicit KNFontManager(QObject *parent = nullptr);
     KNFontManager(const KNFontManager &);
     KNFontManager(KNFontManager &&);
-    static KNFontManager *m_instance;
+    static KNFontManager *ins;
 
     KNConfigure *m_configure;
 };

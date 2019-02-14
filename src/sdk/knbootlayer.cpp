@@ -26,17 +26,17 @@
 
 KNBootLayer::KNBootLayer(QWidget *parent) : QWidget(parent),
     m_showText(new QTimeLine(667, this)),
-    m_fadeBackground(new QTimeLine(1667, this)),
+    m_fadeBackground(new QTimeLine(667, this)),
     m_hideText(new QTimeLine(667, this))
 {
     //Set properties.
     QPalette pal=palette();
     pal.setColor(QPalette::Window, QColor(0, 0, 0));
-    pal.setColor(QPalette::WindowText, QColor(0xb4, 0xb4, 0xb4, 0));
+    pal.setColor(QPalette::WindowText, QColor(255, 255, 255, 0));
     setPalette(pal);
     //Configure the time line.
     m_showText->setUpdateInterval(16);
-    m_showText->setFrameRange(0, 255);
+    m_showText->setFrameRange(0, 0xb4);
     connect(m_showText, &QTimeLine::frameChanged,
             this, &KNBootLayer::onUpdateTextColor);
     connect(m_showText, &QTimeLine::finished,
@@ -55,7 +55,7 @@ KNBootLayer::KNBootLayer(QWidget *parent) : QWidget(parent),
     connect(m_fadeBackground, &QTimeLine::finished,
             m_hideText, &QTimeLine::start);
     m_hideText->setUpdateInterval(16);
-    m_hideText->setFrameRange(255, 0);
+    m_hideText->setFrameRange(0xb4, 0);
     connect(m_hideText, &QTimeLine::frameChanged,
             this, &KNBootLayer::onUpdateTextColor);
     connect(m_hideText, &QTimeLine::finished,
@@ -120,8 +120,7 @@ void KNBootLayer::onUpdateTextColor(int frameValue)
 {
     //Update the background.
     QPalette pal=palette();
-    pal.setColor(QPalette::WindowText, QColor(0xb4, 0xb4, 0xb4,
-                                              frameValue));
+    pal.setColor(QPalette::WindowText, QColor(255, 255, 255, frameValue));
     setPalette(pal);
     //Repaint.
     update();
