@@ -78,7 +78,7 @@ public slots:
      * \brief Set the current theme according to the index in the theme list.
      * \param index The theme index.
      */
-    void setTheme(const int &index);
+    void setTheme(int index);
 
     /*!
      * \brief Set the theme according to the theme name.

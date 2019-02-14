@@ -15,22 +15,28 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
+#ifndef KNAPPCHAPTERSELECTORBASE_H
+#define KNAPPCHAPTERSELECTORBASE_H
 
-#include "core/knpluginmanager.h"
-#include "knmainwindow.h"
+#include <QScrollArea>
 
-#include "knsingletonapplication.h"
-
-int main(int argc, char *argv[])
+/*!
+ * \brief The KNAppChapterSelectorBase class provides the chapter select
+ * interface.
+ */
+class KNAppChapterSelectorBase : public QScrollArea
 {
-    // Create an application.
-    KNSingletonApplication app(argc, argv, "org.kreogist.cinema");
-    KNPluginManager pluginManager;
-    // Initial the main window.
-    KNMainWindow mainWindow;
-    pluginManager.setMainWindow(&mainWindow);
-    pluginManager.loadPlugins();
-    pluginManager.launchApplication();
-    // Expand the application event loop.
-    return app.exec();
-}
+    Q_OBJECT
+public:
+    /*!
+     * \brief Construct a KNAppChapterSelectorBase widget.
+     * \param parent The parent widget.
+     */
+    KNAppChapterSelectorBase(QWidget *parent = nullptr):QScrollArea(parent){}
+
+signals:
+
+public slots:
+};
+
+#endif // KNAPPCHAPTERSELECTORBASE_H

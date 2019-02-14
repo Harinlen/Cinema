@@ -2,5 +2,6 @@
     <qresource prefix="/">
         <file>background.png</file>
         <file>default_font.json</file>
+        <file>default_theme.json</file>
     </qresource>
 </RCC>

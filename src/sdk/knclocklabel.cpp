@@ -60,8 +60,8 @@ void KNClockLabel::updateFontSize()
     //Update the target width and height.
     m_numWidth=targetWidth;
     m_numHeight=targetHeight;
-    //Update the width, "11:11 AM" for 8 chars.
-    setFixedWidth(m_numWidth * 8);
+    //Update the width, "11:11 AM" for 7 num chars + ':'.
+    setFixedWidth(m_numWidth * 7 + (m_numWidth>>1));
 }
 
 void KNClockLabel::paintEvent(QPaintEvent *event)
@@ -71,19 +71,20 @@ void KNClockLabel::paintEvent(QPaintEvent *event)
     painter.setRenderHints(QPainter::TextAntialiasing, true);
 
     QString timeText=getCurrentTime();
-    int x=width()-timeText.size()*m_numWidth, i;
+    int x=width()-m_numWidth * timeText.size() + (m_numWidth>>1), i;
     //Loop and check the text.
     for(i=0; i<timeText.size(); ++i)
     {
         //Draw the char.
-        painter.drawText(x, 0, m_numWidth, height(), Qt::AlignCenter,
+        int textWidth=(timeText.at(i)==':')?(m_numWidth>>1):m_numWidth;
+        painter.drawText(x, 0, textWidth, height(), Qt::AlignCenter,
                          timeText.mid(i, 1));
-        if(timeText.at(i+1)==' ')
+        if(i+1 < timeText.size() && timeText.at(i+1)==' ')
         {
             break;
         }
         //Move to the next position.
-        x+=m_numWidth;
+        x+=textWidth;
     }
     //Draw the left content.
     painter.drawText(x, 0, width()-x, height(),

@@ -77,6 +77,12 @@ KNMainWindow::KNMainWindow(QWidget *parent) : QMainWindow(parent),
     m_bootLayer->setFocusProxy(this);
 }
 
+void KNMainWindow::appendAppWidget(QWidget *widget)
+{
+    //Add widget to the container.
+    m_applicationLayer->appendAppWidget(widget);
+}
+
 void KNMainWindow::resizeEvent(QResizeEvent *event)
 {
     //Update the main window.

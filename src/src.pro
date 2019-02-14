@@ -81,10 +81,8 @@ HEADERS += \
     plugin/knappchapterselector/knchaptersearcher.h \
     plugin/knappchapterselector/knchapterutil.h \
     sdk/knmenulayer.h \
-    sdk/knclocklabel.h
+    sdk/knclocklabel.h \
+    sdk/knappchapterselectorbase.h
 
 RESOURCES += \
     resource/resource.qrc
-
-DISTFILES += \
-    resource/default_font.json

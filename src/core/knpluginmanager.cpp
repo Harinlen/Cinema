@@ -23,6 +23,8 @@
 #include "knglobal.h"
 #include "knconfiguremanager.h"
 
+#include "plugin/knappchapterselector/knappchapterselector.h"
+
 #include "knpluginmanager.h"
 
 KNPluginManager::KNPluginManager(QObject *parent) : QObject(parent),
@@ -50,7 +52,7 @@ void KNPluginManager::setMainWindow(KNMainWindow *mainWindow)
 
 void KNPluginManager::loadPlugins()
 {
-    ;
+    m_mainWindow->appendAppWidget(new KNAppChapterSelector());
 }
 
 void KNPluginManager::launchApplication()

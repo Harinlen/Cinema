@@ -47,6 +47,11 @@ signals:
 
 
 public slots:
+    /*!
+     * \brief Append an application widget to the container.
+     * \param widget The application widget.
+     */
+    void appendAppWidget(QWidget *widget);
 
 protected:
     /*!

@@ -31,10 +31,13 @@ KNApplicationLayer::KNApplicationLayer(QWidget *parent) : QWidget(parent),
     m_containerAnimation(generateAnimation(m_container)),
     m_showAnimation(new QParallelAnimationGroup(this))
 {
-    //Update the header height.
+    //Configure the header.
     m_header->setFixedHeight(knDpi->height(150));
     m_header->setFocusProxy(parentWidget());
     m_header->hide();
+    //Configure the container.
+    m_container->hide();
+
     //Add the animation to the group.
     m_showAnimation->addAnimation(m_headerAnimation);
     m_showAnimation->addAnimation(m_containerAnimation);
@@ -49,6 +52,12 @@ void KNApplicationLayer::showAnimation()
              QPoint(0, height()), QPoint(0, m_header->height()));
     //Show the animation.
     m_showAnimation->start();
+}
+
+void KNApplicationLayer::appendAppWidget(QWidget *widget)
+{
+    //Add widget to container.
+    m_container->addWidget(widget);
 }
 
 void KNApplicationLayer::resizeEvent(QResizeEvent *event)
@@ -75,6 +84,6 @@ inline QPropertyAnimation *KNApplicationLayer::generateAnimation(
         QWidget *target)
 {
     QPropertyAnimation *animation=new QPropertyAnimation(target, "pos", this);
-    animation->setEasingCurve(QEasingCurve::OutCubic);
+    animation->setEasingCurve(QEasingCurve::OutQuad);
     return animation;
 }

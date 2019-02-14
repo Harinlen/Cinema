@@ -21,7 +21,7 @@
 #include <QDir>
 #include <QThread>
 
-#include <QScrollArea>
+#include "knappchapterselectorbase.h"
 
 class QTimeLine;
 class KNChapterSearcher;
@@ -32,7 +32,7 @@ class KNProxyChapterModel;
  * chapter. By providing a path, this widget will automatically load all the
  * videos under the path.
  */
-class KNAppChapterSelector : public QScrollArea
+class KNAppChapterSelector : public KNAppChapterSelectorBase
 {
     Q_OBJECT
 public:
@@ -41,10 +41,18 @@ public:
      * \param parent The parent widget.
      */
     explicit KNAppChapterSelector(QWidget *parent = nullptr);
-    ~KNAppChapterSelector();
+    ~KNAppChapterSelector() override;
 
 signals:
+    /*!
+     * \brief Request for starting the searching.
+     * \param dirPath The target directory path.
+     */
     void requireStartSearch(QString dirPath);
+
+    /*!
+     * \brief Request to cancel the current searching.
+     */
     void requireCancelSearch();
 
 public slots:
@@ -59,6 +67,22 @@ public slots:
      */
     void reset();
 
+protected:
+    /*!
+     * \brief Reimplemented from KNAppChapterSelectorBase::paintEvent().
+     */
+    void paintEvent(QPaintEvent *event) override;
+
+    /*!
+     * \brief resizeEvent
+     * \param event
+     */
+    void resizeEvent(QResizeEvent *event) override;
+
+private slots:
+    void retranslate();
+    void onRowCountChange(int itemCount);
+
 private:
     enum SelectorState
     {
@@ -70,15 +94,18 @@ private:
     };
 
     inline void startHideAnimation();
+    inline void updateParameters(int itemCount);
 
     QDir m_currentDir;
     QThread m_chapterSearchThread;
+    QString m_addDirHint;
     KNChapterModel *m_chapterModel;
     KNProxyChapterModel *m_proxyChapterModel;
     KNChapterSearcher *m_chapterSearcher;
 
     QTimeLine *m_hideAnimation;
-    int m_currentState;
+    int m_hItemCount, m_itemWidth, m_itemHeight, m_itemSpacing, m_currentState,
+        m_startX;
 };
 
 #endif // KNAPPCHAPTERSELECTOR_H

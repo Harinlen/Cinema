@@ -66,6 +66,8 @@ void KNChapterModel::setChapterList(const QList<ChapterData> &chapterList)
     beginInsertRows(QModelIndex(), 0, chapterList.size()-1);
     m_chapterList=chapterList;
     endInsertRows();
+    //Emit the new signal.
+    emit rowCountChange(m_chapterList.size());
 }
 
 void KNChapterModel::reset()

@@ -47,6 +47,11 @@ public:
     override;
 
 signals:
+    /*!
+     * \brief When the row count is changed, this signal will be emitted.
+     * \param rowCount The new row count.
+     */
+    void rowCountChange(int rowCount);
 
 public slots:
     /*!

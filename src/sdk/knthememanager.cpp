@@ -26,8 +26,6 @@
 
 #include "knthememanager.h"
 
-#include <QDebug>
-
 KNThemeManager *KNThemeManager::ins=nullptr;
 
 KNThemeManager *KNThemeManager::instance()
@@ -89,7 +87,7 @@ void KNThemeManager::loadThemeFiles(const QString &themeDirPath)
     //Clear the previous theme list.
     m_themeList.clear();
     //Add the default theme as the first item in the list.
-    addTheme("Default", "://public/default_theme.json", QPixmap());
+    addTheme("Default", ":/default_theme.json", QPixmap());
     //The structure of a theme directory.
     /* Theme
      * |-<Theme Name>
@@ -143,7 +141,7 @@ void KNThemeManager::loadThemeFiles(const QString &themeDirPath)
     }
 }
 
-void KNThemeManager::setTheme(const int &index)
+void KNThemeManager::setTheme(int index)
 {
     if(index>-1 && index<m_themeList.size())
     {
@@ -198,17 +196,15 @@ void KNThemeManager::loadTheme(const QString &themeFilePath)
     QHash<QString, QPalette> paletteList;
     //Parse the theme data.
     QStringList paletteNames=themeData.keys();
-    for(QStringList::iterator i=paletteNames.begin();
-        i!=paletteNames.end();
-        ++i)
+    for(auto i : paletteNames)
     {
         //Check whether we have loaded this name before.
-        if(paletteList.contains(*i))
+        if(paletteList.contains(i))
         {
             continue;
         }
         //Parse the data.
-        parsePalette(*i, &themeData, paletteList);
+        parsePalette(i, &themeData, paletteList);
     }
     //Check the new map is available or not.
     if(!paletteList.isEmpty())
@@ -216,11 +212,9 @@ void KNThemeManager::loadTheme(const QString &themeFilePath)
         //Save the palette map.
         m_paletteList=paletteList;
         //Update all the widget's palette in the widget list.
-        for(QLinkedList<QWidget *>::iterator i=m_widgetList.begin();
-            i!=m_widgetList.end();
-            ++i)
+        for(auto i : m_widgetList)
         {
-            (*i)->setPalette(getPalette((*i)->objectName()));
+            i->setPalette(getPalette(i->objectName()));
         }
         //Emit the theme change signal.
         emit themeChange();

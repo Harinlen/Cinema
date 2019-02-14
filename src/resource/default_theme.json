@@ -1,0 +1,10 @@
+{
+    "Application": {
+        "WindowText": "#FFFFFF"
+    },
+    "AppChapterSelector": {
+        "Parent": "Application",
+        "Base": "#FF0000",
+        "Window": "#00000000"
+    }
+}
