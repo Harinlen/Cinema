@@ -36,12 +36,41 @@ class KNAppChapterSelector : public KNAppChapterSelectorBase
 {
     Q_OBJECT
 public:
+    enum ScrollHint
+    {
+        PositionAtTop,
+        PositionAtCenter,
+        PositionAtBottom,
+        EnsureVisible
+    };
+
     /*!
      * \brief Construct a KNAppChapterSelector widget.
      * \param parent The parent widget.
      */
     explicit KNAppChapterSelector(QWidget *parent = nullptr);
     ~KNAppChapterSelector() override;
+
+    /*!
+     * \brief Get the current index of a specific visual point of the widget.
+     * \param point The visual point.
+     * \return The index of the model.
+     */
+    int indexAt(const QPoint &point) const;
+
+    /*!
+     * \brief Scroll to a specific index of item.
+     * \param index The target item index of the display.
+     * \param hint The scroll hint.
+     */
+    void scrollTo(int index, ScrollHint hint = EnsureVisible);
+
+    /*!
+     * \brief Get the item visual rect.
+     * \param index The item index
+     * \return The item visual rect of the current position.
+     */
+    QRect visualRect(int index) const;
 
 signals:
     /*!
@@ -67,6 +96,12 @@ public slots:
      */
     void reset();
 
+    /*!
+     * \brief Set the current selected index.
+     * \param index The index of the item.
+     */
+    void setCurrentIndex(int index);
+
 protected:
     /*!
      * \brief Reimplemented from KNAppChapterSelectorBase::paintEvent().
@@ -74,10 +109,19 @@ protected:
     void paintEvent(QPaintEvent *event) override;
 
     /*!
-     * \brief resizeEvent
-     * \param event
+     * \brief Reimplemented from KNAppChapterSelectorBase::resizeEvent().
      */
     void resizeEvent(QResizeEvent *event) override;
+
+    /*!
+     * \brief Reimplemented from KNAppChapterSelectorBase::keyPressEvent().
+     */
+    void keyPressEvent(QKeyEvent *event) override;
+
+    /*!
+     * \brief Reimplemented from KNAppChapterSelectorBase::mouseReleaseEvent().
+     */
+    void mouseReleaseEvent(QMouseEvent *event) override;
 
 private slots:
     void retranslate();
@@ -92,9 +136,11 @@ private:
         StateLoading,
         StateShowing
     };
-
+    inline void validAndMoveToCurrent();
     inline void startHideAnimation();
     inline void updateParameters(int itemCount);
+    inline int indexScrollBarValue(int index, ScrollHint hint);
+    inline QRect itemContentRect(int index) const;
 
     QDir m_currentDir;
     QThread m_chapterSearchThread;
@@ -103,9 +149,9 @@ private:
     KNProxyChapterModel *m_proxyChapterModel;
     KNChapterSearcher *m_chapterSearcher;
 
-    QTimeLine *m_hideAnimation;
-    int m_hItemCount, m_itemWidth, m_itemHeight, m_itemSpacing, m_currentState,
-        m_startX;
+    QTimeLine *m_scrollAnime, *m_hideAnimation;
+    int m_maxColumnCount, m_itemWidth, m_itemHeight, m_itemSpacing, m_startX,
+        m_currentIndex, m_currentState, m_filterCount;
 };
 
 #endif // KNAPPCHAPTERSELECTOR_H

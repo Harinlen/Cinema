@@ -19,6 +19,7 @@
 #define KNAUDIOENGINE_H
 
 #include <QDir>
+#include <QMediaContent>
 
 #include <QObject>
 
@@ -27,7 +28,8 @@
 class QMediaPlayer;
 /*!
  * \brief The KNAudioEngine class provides an audio engine for playing hint
- * sounds. All the sounds will be dynamicly load from the runtime directory.
+ * sounds. All the sounds will be loaded at the loading time when the directory
+ * is set.
  */
 class KNAudioManager : public QObject
 {
@@ -80,6 +82,7 @@ private:
     KNAudioManager(KNAudioManager &&);
 
     QStringList m_fileName;
+    QMediaContent m_audio[AudioTypeCount];
     QDir m_audioDirectory;
     QMediaPlayer *m_audioPlayer;
 

@@ -35,7 +35,6 @@ KNWidgetSwitcher::KNWidgetSwitcher(QWidget *parent) :
 {
     //Set properties.
     setContentsMargins(0,0,0,0);
-    setFocusPolicy(Qt::StrongFocus);
 
     //Add the animation to animation group.
     m_movingAnimationGroup->addAnimation(m_inAnimation);

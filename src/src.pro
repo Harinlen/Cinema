@@ -50,7 +50,9 @@ SOURCES += \
     plugin/knappchapterselector/knchaptersearcher.cpp \
     plugin/knappchapterselector/knchapterutil.cpp \
     sdk/knmenulayer.cpp \
-    sdk/knclocklabel.cpp
+    sdk/knclocklabel.cpp \
+    sdk/knsaostyle.cpp \
+    sdk/knscrollarea.cpp
 
 HEADERS += \
     sdk/knsingletonapplication.h \
@@ -82,7 +84,9 @@ HEADERS += \
     plugin/knappchapterselector/knchapterutil.h \
     sdk/knmenulayer.h \
     sdk/knclocklabel.h \
-    sdk/knappchapterselectorbase.h
+    sdk/knappchapterselectorbase.h \
+    sdk/knsaostyle.h \
+    sdk/knscrollarea.h
 
 RESOURCES += \
     resource/resource.qrc

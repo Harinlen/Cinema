@@ -41,10 +41,25 @@ KNApplicationLayer::KNApplicationLayer(QWidget *parent) : QWidget(parent),
     //Add the animation to the group.
     m_showAnimation->addAnimation(m_headerAnimation);
     m_showAnimation->addAnimation(m_containerAnimation);
+    connect(m_showAnimation, &QParallelAnimationGroup::finished,
+            [=]
+    {
+        //Set focus to container.
+        QWidget *currentPanel=m_container->currentWidget();
+        if(currentPanel)
+        {
+            //Set focus to the panel.
+            currentPanel->setFocus();
+        }
+    });
 }
 
 void KNApplicationLayer::showAnimation()
 {
+    if(m_header->isVisible())
+    {
+        return;
+    }
     //Set the header animation position.
     setRange(m_headerAnimation,
              QPoint(0, -m_header->height()), QPoint(0, 0));

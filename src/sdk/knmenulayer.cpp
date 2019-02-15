@@ -33,7 +33,7 @@ KNMenuLayer::KNMenuLayer(QWidget *parent) : QWidget(parent),
     setFocusPolicy(Qt::StrongFocus);
     //Configure the timeline.
     m_timeLine->setUpdateInterval(16);
-    m_timeLine->setEasingCurve(QEasingCurve::OutQuad);
+    m_timeLine->setEasingCurve(QEasingCurve::OutCubic);
     connect(m_timeLine, &QTimeLine::frameChanged, [=](int darkness)
     {
         //Save the darkness.

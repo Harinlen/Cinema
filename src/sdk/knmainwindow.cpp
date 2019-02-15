@@ -29,8 +29,6 @@
 
 #include "knmainwindow.h"
 
-#include <QDebug>
-
 #define KeyBackground       "Background"
 #define KeyBackgroundVideo  "BackgroundVideo"
 

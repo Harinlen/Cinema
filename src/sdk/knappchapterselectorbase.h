@@ -18,13 +18,13 @@
 #ifndef KNAPPCHAPTERSELECTORBASE_H
 #define KNAPPCHAPTERSELECTORBASE_H
 
-#include <QScrollArea>
+#include "knscrollarea.h"
 
 /*!
  * \brief The KNAppChapterSelectorBase class provides the chapter select
  * interface.
  */
-class KNAppChapterSelectorBase : public QScrollArea
+class KNAppChapterSelectorBase : public KNScrollArea
 {
     Q_OBJECT
 public:
@@ -32,7 +32,7 @@ public:
      * \brief Construct a KNAppChapterSelectorBase widget.
      * \param parent The parent widget.
      */
-    KNAppChapterSelectorBase(QWidget *parent = nullptr):QScrollArea(parent){}
+    KNAppChapterSelectorBase(QWidget *parent = nullptr) : KNScrollArea(parent){}
 
 signals:
 

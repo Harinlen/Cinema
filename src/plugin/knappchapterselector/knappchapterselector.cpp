@@ -19,6 +19,7 @@
 #include <QScrollBar>
 #include <QPainter>
 
+#include "knaudiomanager.h"
 #include "knchapterutil.h"
 #include "kndpimanager.h"
 #include "knchaptersearcher.h"
@@ -29,6 +30,8 @@
 
 #include "knappchapterselector.h"
 
+#include <QDebug>
+
 #define BlockWidth      220
 #define BlockHeight     356
 #define BlockSpacing    5
@@ -38,11 +41,14 @@ KNAppChapterSelector::KNAppChapterSelector(QWidget *parent) :
     m_chapterModel(new KNChapterModel(this)),
     m_proxyChapterModel(new KNProxyChapterModel(this)),
     m_chapterSearcher(new KNChapterSearcher()),
+    m_scrollAnime(new QTimeLine(200, this)),
     m_hideAnimation(new QTimeLine(200, this)),
-    m_hItemCount(1),
+    m_maxColumnCount(1),
     m_itemWidth(knDpi->width(BlockWidth)),
     m_itemHeight(knDpi->height(BlockHeight)),
     m_itemSpacing(knDpi->height(BlockSpacing)),
+    m_startX(0),
+    m_currentIndex(-1),
     m_currentState(StateShowing)
 {
     setObjectName("AppChapterSelector");
@@ -50,8 +56,9 @@ KNAppChapterSelector::KNAppChapterSelector(QWidget *parent) :
     qRegisterMetaType<QList<ChapterUtil::ChapterData>>(
                 "QList<ChapterUtil::ChapterData>");
     //Set properties.
+    setFocusPolicy(Qt::WheelFocus);
     setFrameStyle(QFrame::NoFrame);
-    setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     //Set chapter model cover size.
     m_proxyChapterModel->setSourceModel(m_chapterModel);
@@ -77,6 +84,16 @@ KNAppChapterSelector::KNAppChapterSelector(QWidget *parent) :
     verticalScrollBar()->setPageStep(m_itemHeight+m_itemSpacing);
     connect(verticalScrollBar(), &QScrollBar::valueChanged, [=]{update();});
     m_chapterSearcher->moveToThread(&m_chapterSearchThread);
+    //Configure the timeline.
+    m_scrollAnime->setUpdateInterval(16);
+    m_scrollAnime->setEasingCurve(QEasingCurve::OutCubic);
+    connect(m_scrollAnime, &QTimeLine::frameChanged, [=](int scrollValue)
+    {
+        //Set the value to scroll bar.
+        verticalScrollBar()->setValue(scrollValue);
+        //Update the viewport.
+        viewport()->update();
+    });
     //Set the theme.
     knTheme->registerWidget(this);
     //Link multiple locale.
@@ -99,6 +116,67 @@ KNAppChapterSelector::~KNAppChapterSelector()
     m_chapterSearcher->deleteLater();
 }
 
+int KNAppChapterSelector::indexAt(const QPoint &point) const
+{
+    //Calculate the point content position and the line of the point.
+    int spacingWidth=m_itemWidth+m_itemSpacing,
+        spacingHeight=m_itemHeight+m_itemSpacing,
+        pointContentY=verticalScrollBar()->value()+point.y(),
+        itemLine=pointContentY/spacingHeight;
+    //Check whether mouse click on a row spacing part.
+    if(pointContentY-itemLine*spacingHeight<m_itemSpacing)
+    {
+        return -1;
+    }
+    //Calculate the column of the position.
+    int itemColumn=point.x()/spacingWidth,
+        pointXInItem=point.x()-itemColumn*spacingWidth;
+    //Check whether mouse click on a column spacing part.
+    if(pointXInItem<m_itemSpacing || pointXInItem>m_itemSpacing+m_itemWidth)
+    {
+        return -1;
+    }
+    //Calculate the item category index.
+    int categoryRow=itemLine*m_maxColumnCount+itemColumn;
+    //Check if the category row vaild.
+    //We should check the category proxy model, because the point is a display
+    //variable.
+    return (categoryRow>-1 && categoryRow<186) ? categoryRow : -1;
+}
+
+void KNAppChapterSelector::scrollTo(int index, ScrollHint hint)
+{
+    //Check the index and the validation of max column count.
+    if(index<0 || index>=186 || m_maxColumnCount==0 ||
+            //Check whether we need to move the vertical scroll bar
+            (hint==EnsureVisible &&
+             rect().contains(visualRect(index), true)))
+    {
+        return;
+    }
+    //Use timeline to move to the position.
+    m_scrollAnime->stop();
+    m_scrollAnime->setFrameRange(verticalScrollBar()->value(),
+                                 indexScrollBarValue(index, hint));
+    m_scrollAnime->start();
+    //Update the painting.
+    viewport()->update();
+}
+
+QRect KNAppChapterSelector::visualRect(int index) const
+{
+    //Get the item content rect.
+    QRect indexRect=itemContentRect(index);
+    //If the rect is vaild, remove the value of the scroll bar to get the
+    //position in the rect.
+    return indexRect.isValid()?
+                QRect(indexRect.left()-horizontalScrollBar()->value(),
+                      indexRect.top()-verticalScrollBar()->value(),
+                      indexRect.width(),
+                      indexRect.height()):
+                QRect();
+}
+
 void KNAppChapterSelector::setCurrentDir(const QString &dirPath)
 {
     //Save the new directory path.
@@ -113,6 +191,21 @@ void KNAppChapterSelector::reset()
     m_chapterModel->reset();
     //Reset the current state.
     startHideAnimation();
+}
+
+void KNAppChapterSelector::setCurrentIndex(int index)
+{
+    //Check the index validation.
+    if(index<-1 || index>=186 || m_currentIndex==index)
+    {
+        return;
+    }
+    //Save the current index.
+    m_currentIndex=index;
+    //Move to the index.
+    validAndMoveToCurrent();
+    //Update the view port.
+    viewport()->update();
 }
 
 void KNAppChapterSelector::paintEvent(QPaintEvent *event)
@@ -138,18 +231,27 @@ void KNAppChapterSelector::paintEvent(QPaintEvent *event)
             startRow=verticalValue/(m_itemSpacing+m_itemHeight),
             itemY=startRow*(m_itemSpacing+m_itemHeight)-verticalValue
                 +m_itemSpacing,
-            index=startRow*m_hItemCount,
+            index=startRow*m_maxColumnCount,
             itemStartX=m_startX+m_itemSpacing,
             itemX=itemStartX, currentColumn=0;
         while(index<186)
         {
             //Draw the item.
-            painter.drawRect(itemX, itemY, m_itemWidth, m_itemHeight);
+            if(index==m_currentIndex)
+            {
+                painter.fillRect(QRect(itemX, itemY, m_itemWidth, m_itemHeight),
+                                 QColor(255, 255, 255, 200));
+            }
+            else
+            {
+                painter.fillRect(QRect(itemX, itemY, m_itemWidth, m_itemHeight),
+                                 QColor(255, 255, 255, 100));
+            }
             //Move to the next item
             ++index;
             //Move to the next column.
             ++currentColumn;
-            if(currentColumn==m_hItemCount)
+            if(currentColumn==m_maxColumnCount)
             {
                 //Move to next row.
                 itemY+=m_itemHeight+m_itemSpacing;
@@ -178,12 +280,78 @@ void KNAppChapterSelector::resizeEvent(QResizeEvent *event)
     //Resize the widget.
     KNAppChapterSelectorBase::resizeEvent(event);
     //Update the row item count.
-    m_hItemCount=(width()-m_itemSpacing) / (m_itemSpacing+m_itemWidth);
-    m_startX=(width()-m_hItemCount*(m_itemSpacing+m_itemWidth)-
+    m_maxColumnCount=(width()-m_itemSpacing) / (m_itemSpacing+m_itemWidth);
+    m_startX=(width()-m_maxColumnCount*(m_itemSpacing+m_itemWidth)-
               m_itemSpacing)>>1;
     //Update parameters.
 //    updateParameters(m_chapterModel->rowCount());
     updateParameters(186);
+}
+
+void KNAppChapterSelector::keyPressEvent(QKeyEvent *event)
+{
+    if(event->isAutoRepeat())
+    {
+        //Filter start.
+        ++m_filterCount;
+        if(m_filterCount>4)
+        {
+            m_filterCount=0;
+        }
+        //When the filter is on,
+        if(m_filterCount)
+        {
+            //Ignore the current event.
+            event->ignore();
+            return;
+        }
+    }
+    else
+    {
+        //Reset the filter.
+        m_filterCount=0;
+    }
+    switch(event->key())
+    {
+    case Qt::Key_W: //Up
+        m_currentIndex-=m_maxColumnCount;
+        validAndMoveToCurrent();
+        event->accept();
+        break;
+    case Qt::Key_S: //Down
+        m_currentIndex+=m_maxColumnCount;
+        validAndMoveToCurrent();
+        event->accept();
+        break;
+    case Qt::Key_A: //Left
+        --m_currentIndex;
+        validAndMoveToCurrent();
+        event->accept();
+        break;
+    case Qt::Key_D: //Right
+        ++m_currentIndex;
+        validAndMoveToCurrent();
+        event->accept();
+        break;
+    case Qt::Key_Enter: //Enter
+        event->accept();
+        break;
+    default:
+        event->ignore();
+        break;
+    }
+}
+
+void KNAppChapterSelector::mouseReleaseEvent(QMouseEvent *event)
+{
+    //Check the event position.
+    int clickedIndex=indexAt(event->pos());
+    if(clickedIndex!=-1)
+    {
+        setCurrentIndex(clickedIndex);
+    }
+    //Accept all the release event.
+    event->accept();
 }
 
 void KNAppChapterSelector::retranslate()
@@ -197,6 +365,25 @@ void KNAppChapterSelector::onRowCountChange(int itemCount)
     updateParameters(itemCount);
 }
 
+inline void KNAppChapterSelector::validAndMoveToCurrent()
+{
+    //Check index range.
+    if(m_currentIndex<0)
+    {
+        m_currentIndex=0;
+    }
+    else if(m_currentIndex>=186)
+    {
+        m_currentIndex=185;
+    }
+    //Play the audio.
+    knAudio->play(KNAudioManager::AudioMove);
+    //Update the viewport.
+    viewport()->update();
+    //Move to the current index.
+    scrollTo(m_currentIndex);
+}
+
 inline void KNAppChapterSelector::startHideAnimation()
 {
     ;
@@ -204,10 +391,66 @@ inline void KNAppChapterSelector::startHideAnimation()
 
 inline void KNAppChapterSelector::updateParameters(int itemCount)
 {
-    int rowCount = itemCount / m_hItemCount;
+    //Get the row count of the view.
+    int rowCount = itemCount / m_maxColumnCount;
+    if(rowCount * m_maxColumnCount < itemCount)
+    {
+        ++rowCount;
+    }
     //Calculate the entire height.
     int entireHeight = rowCount * (m_itemHeight +
                                    m_itemSpacing) + m_itemSpacing;
+
     //Update the vertical scroll bar.
     verticalScrollBar()->setRange(0, entireHeight - height());
+    //Check the item count.
+    m_currentIndex=(itemCount>0)?0:-1;
+}
+
+inline int KNAppChapterSelector::indexScrollBarValue(int index, ScrollHint hint)
+{
+    //Get the top of index position, set it to scroll value.
+    int spacingHeight=m_itemSpacing+m_itemHeight,
+        topPositionValue=index/m_maxColumnCount*spacingHeight+m_itemSpacing;
+    //Change the item content Y according to the hint.
+    switch(hint)
+    {
+    case PositionAtTop:
+        //No need to change.
+        return topPositionValue;
+    case PositionAtCenter:
+        //Reduce a half of the viewer height to move up.
+        return topPositionValue-((height()-spacingHeight)>>1);
+    case PositionAtBottom:
+        //Reduce the whole viewer height to move up.
+        return topPositionValue-height()+spacingHeight;
+    default:
+        //Now, the index item must be a unvisible one in the viewer.
+        //We have already has the top position, calculate the bottom position,
+        //and calculate the distence of the current vertical scroll bar's value
+        //to these two position.
+        int bottomPositionValue=topPositionValue-height()+spacingHeight;
+        //If to the bottom is lesser than to top, change the value.
+        return (qAbs(verticalScrollBar()->value()-bottomPositionValue)<
+                qAbs(verticalScrollBar()->value()-topPositionValue))?
+                    bottomPositionValue:
+                    topPositionValue;
+    }
+}
+
+QRect KNAppChapterSelector::itemContentRect(int index) const
+{
+    //Check the index first.
+    if(index<0 || index>186 || m_maxColumnCount==0)
+    {
+        return QRect();
+    }
+    //Calculate the item line.
+    int itemLine=index/m_maxColumnCount;
+    //Calculate the rect.
+    return QRect((index-itemLine*m_maxColumnCount)*(m_itemWidth+m_itemSpacing)+
+                 m_startX,
+                 itemLine*(m_itemHeight+m_itemSpacing)+m_itemSpacing,
+                 m_itemWidth,
+                 m_itemHeight);
 }

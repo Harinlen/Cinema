@@ -42,6 +42,13 @@ void KNAudioManager::setAudioDirectory(const QString &audioDirPath)
 {
     //Set the audio dir path.
     m_audioDirectory=QDir(KNUtil::ensurePathValid(audioDirPath));
+    //Set the directory.
+    for(int i=0; i<AudioTypeCount; ++i)
+    {
+        m_audio[i]=QMediaContent(QUrl::fromLocalFile(
+                                     m_audioDirectory.filePath(
+                                         m_fileName.at(i))));
+    }
 }
 
 KNAudioManager::KNAudioManager(QObject *parent) : QObject(parent),
@@ -69,9 +76,7 @@ void KNAudioManager::play(int type)
         m_audioPlayer->stop();
     }
     //Set the media content according to the type.
-    m_audioPlayer->setMedia(QMediaContent(QUrl::fromLocalFile(
-                                              m_audioDirectory.filePath(
-                                                  m_fileName.at(type)))));
+    m_audioPlayer->setMedia(m_audio[type]);
     //Play the audio.
     m_audioPlayer->play();
 }
