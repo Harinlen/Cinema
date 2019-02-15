@@ -129,8 +129,9 @@ int KNAppChapterSelector::indexAt(const QPoint &point) const
         return -1;
     }
     //Calculate the column of the position.
-    int itemColumn=point.x()/spacingWidth,
-        pointXInItem=point.x()-itemColumn*spacingWidth;
+    int itemX=point.x()-m_startX,
+        itemColumn=itemX/spacingWidth,
+        pointXInItem=itemX-itemColumn*spacingWidth;
     //Check whether mouse click on a column spacing part.
     if(pointXInItem<m_itemSpacing || pointXInItem>m_itemSpacing+m_itemWidth)
     {
@@ -222,30 +223,34 @@ void KNAppChapterSelector::paintEvent(QPaintEvent *event)
         painter.setPen(palette().color(QPalette::WindowText));
         painter.drawText(rect(), Qt::AlignCenter, m_addDirHint);
         break;
-    default:
+    case StateSelect:
+    case StateHiding:
+    case StateShowing:
     {
-        //Should never arrive here.
-
         //Get the first row start index.
         int verticalValue=verticalScrollBar()->value(),
             startRow=verticalValue/(m_itemSpacing+m_itemHeight),
             itemY=startRow*(m_itemSpacing+m_itemHeight)-verticalValue
-                +m_itemSpacing,
+            +m_itemSpacing,
             index=startRow*m_maxColumnCount,
             itemStartX=m_startX+m_itemSpacing,
             itemX=itemStartX, currentColumn=0;
+        //Clear the painter.
+        painter.setPen(Qt::NoPen);
         while(index<186)
         {
+            QRect itemRect(itemX, itemY, m_itemWidth, m_itemHeight);
+
             //Draw the item.
+            //!FIXME: replace this part of code with the image.
+            painter.fillRect(itemRect,
+                             QColor(255, 255, 255, 100));
+            //Draw the border around the selected item.
             if(index==m_currentIndex)
             {
-                painter.fillRect(QRect(itemX, itemY, m_itemWidth, m_itemHeight),
-                                 QColor(255, 255, 255, 200));
-            }
-            else
-            {
-                painter.fillRect(QRect(itemX, itemY, m_itemWidth, m_itemHeight),
-                                 QColor(255, 255, 255, 100));
+                painter.setPen(QColor(255, 255, 255, 200));
+                painter.drawRect(itemRect);
+                painter.setPen(Qt::NoPen);
             }
             //Move to the next item
             ++index;
@@ -272,6 +277,11 @@ void KNAppChapterSelector::paintEvent(QPaintEvent *event)
         }
         break;
     }
+    default:
+    {
+        //Should never arrive here.
+        break;
+    }
     }
 }
 
@@ -290,27 +300,6 @@ void KNAppChapterSelector::resizeEvent(QResizeEvent *event)
 
 void KNAppChapterSelector::keyPressEvent(QKeyEvent *event)
 {
-    if(event->isAutoRepeat())
-    {
-        //Filter start.
-        ++m_filterCount;
-        if(m_filterCount>4)
-        {
-            m_filterCount=0;
-        }
-        //When the filter is on,
-        if(m_filterCount)
-        {
-            //Ignore the current event.
-            event->ignore();
-            return;
-        }
-    }
-    else
-    {
-        //Reset the filter.
-        m_filterCount=0;
-    }
     switch(event->key())
     {
     case Qt::Key_W: //Up

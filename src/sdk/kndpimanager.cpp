@@ -44,8 +44,8 @@ void KNDpiManager::setDpi(int dpiX, int dpiY)
     //Use the 1.0 as the default scaler. Nothing need to be changed.
     //For Mac OS X, I have no idea what is happened, but it seems that it could
     //automatically support the Retina display.
-    m_xScaler=1.0;
-    m_yScaler=1.0;
+    m_xScaler=1366.0 / 1920.0;
+    m_yScaler=768.0 / 1080.0;
     return;
 #else
     //For other OS, it needs scaling. The DPI should be several times of 72.

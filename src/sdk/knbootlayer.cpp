@@ -133,7 +133,7 @@ inline void KNBootLayer::updateFont()
     //Calculate the text font.
     int targetSize=qMax(static_cast<int>(0.026 * static_cast<qreal>(height())),
                         20);
-    textFont.setFamily("SCE-PS3 Rodin LATIN");
+    textFont.setFamily("SST Roman");
     textFont.setPixelSize(targetSize);
     textFont.setKerning(true);
     textFont.setStretch(124);

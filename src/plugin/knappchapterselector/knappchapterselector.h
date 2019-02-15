@@ -151,7 +151,7 @@ private:
 
     QTimeLine *m_scrollAnime, *m_hideAnimation;
     int m_maxColumnCount, m_itemWidth, m_itemHeight, m_itemSpacing, m_startX,
-        m_currentIndex, m_currentState, m_filterCount;
+        m_currentIndex, m_currentState;
 };
 
 #endif // KNAPPCHAPTERSELECTOR_H
