@@ -15,26 +15,33 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-#include "knchapterselector.h"
-#include "kndpimanager.h"
+#ifndef KNMENUBASE_H
+#define KNMENUBASE_H
 
-#include "knappchapterselector.h"
+#include <QWidget>
 
-#define ChapterSelectorY    57
-
-KNAppChapterSelector::KNAppChapterSelector(QWidget *parent) : QWidget(parent),
-    m_chapterSelector(new KNChapterSelector(this))
+/*!
+ * \brief The KNMenuBase class provides a widget interface for the menu using in
+ * the menu layer.
+ */
+class KNMenuBase : public QWidget
 {
-    //Set properties.
-    //Configure the chapter selector.
-    m_chapterSelector->move(knDpi->pos(0, ChapterSelectorY));
-}
+    Q_OBJECT
+public:
+    /*!
+     * \brief Construct a KNMenuBase widget.
+     * \param parent The parent widget.
+     */
+    KNMenuBase(QWidget *parent = nullptr):QWidget(parent){}
 
-void KNAppChapterSelector::resizeEvent(QResizeEvent *event)
-{
-    //Resize the widgetr size.
-    QWidget::resizeEvent(event);
-    //Resize the chapter selector.
-    m_chapterSelector->resize(width(),
-                              height()-knDpi->height(ChapterSelectorY));
-}
+signals:
+
+public slots:
+    /*!
+     * \brief Set the menu and its item opacity.
+     * \param opacity The opacity, the value is between 0 to 1.
+     */
+    virtual void setOpacity(qreal opacity) = 0;
+};
+
+#endif // KNMENUBASE_H

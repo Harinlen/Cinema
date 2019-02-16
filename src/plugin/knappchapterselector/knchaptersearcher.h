@@ -38,6 +38,10 @@ public:
      */
     explicit KNChapterSearcher(QObject *parent = nullptr);
 
+    /*!
+     * \brief Get the cover scaled size.
+     * \return The cover target scaled size.
+     */
     QSize coverSize() const;
 
 signals:
@@ -71,6 +75,7 @@ public slots:
     void cancel();
 
 private:
+    inline QPixmap loadCover(const QString &coverPath, const char *format);
     QSize m_coverSize;
     bool m_cancel, m_running;
 };

@@ -23,6 +23,7 @@
 class QLabel;
 class KNBackground;
 class KNApplicationLayer;
+class KNMenuBase;
 class KNMenuLayer;
 class KNBootLayer;
 class KNConfigure;
@@ -52,6 +53,12 @@ public slots:
      * \param widget The application widget.
      */
     void appendAppWidget(QWidget *widget);
+
+    /*!
+     * \brief Set the main menu widget.
+     * \param menuWidget The menu widget.
+     */
+    void setMenuWidget(KNMenuBase *menuWidget);
 
 protected:
     /*!

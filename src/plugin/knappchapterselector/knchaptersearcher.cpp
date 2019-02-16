@@ -61,21 +61,21 @@ void KNChapterSearcher::search(const QString &dirPath)
         //The target should be a directory.
         ChapterData chapterData;
         chapterData.title=i.fileName();
-        //Check the cover image.
-        QString coverPath=QDir(i.absoluteFilePath()).filePath("cover.png");
-        if(QFileInfo::exists(coverPath))
+        //Check and load the cover image.
+        QPixmap &&coverImage=
+                loadCover(QDir(i.absoluteFilePath()).filePath("cover.png"),
+                          "png");
+        if(coverImage.isNull())
         {
-            //Try to load the image.
-            QPixmap coverImage(coverPath, "png");
-            if(!coverImage.isNull())
-            {
-                //Scale the image to our size.
-                chapterData.cover=coverImage.scaled(
-                            m_coverSize,
-                            Qt::KeepAspectRatioByExpanding,
-                            Qt::SmoothTransformation);
-            }
+            coverImage=
+                    loadCover(QDir(i.absoluteFilePath()).filePath("cover.jpg"),
+                              "jpg");
         }
+        if(!coverImage.isNull())
+        {
+            chapterData.cover=coverImage;
+        }
+
         //Add the chapter data to the list.
         chapterList.append(chapterData);
     }
@@ -104,4 +104,23 @@ void KNChapterSearcher::cancel()
         //Set the cancel flag.
         m_cancel=true;
     }
+}
+
+QPixmap KNChapterSearcher::loadCover(const QString &coverPath,
+                                       const char *format)
+{
+    if(QFileInfo::exists(coverPath))
+    {
+        //Try to load the image.
+        QPixmap coverImage(coverPath, format);
+        if(!coverImage.isNull())
+        {
+            //Scale the image to our size.
+            return coverImage.scaled(
+                        m_coverSize,
+                        Qt::KeepAspectRatioByExpanding,
+                        Qt::SmoothTransformation);
+        }
+    }
+    return QPixmap();
 }

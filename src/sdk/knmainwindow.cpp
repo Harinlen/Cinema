@@ -81,6 +81,12 @@ void KNMainWindow::appendAppWidget(QWidget *widget)
     m_applicationLayer->appendAppWidget(widget);
 }
 
+void KNMainWindow::setMenuWidget(KNMenuBase *menuWidget)
+{
+    //Give the menu to the menu layer.
+    m_menuLayer->setMenuWidget(menuWidget);
+}
+
 void KNMainWindow::resizeEvent(QResizeEvent *event)
 {
     //Update the main window.

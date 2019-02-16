@@ -21,6 +21,7 @@
 #include <QWidget>
 
 class QTimeLine;
+class KNMenuBase;
 /*!
  * \brief The KNMenuLayer class provides the layer for displaying a menu.
  */
@@ -34,9 +35,21 @@ public:
      */
     explicit KNMenuLayer(QWidget *parent = nullptr);
 
+    /*!
+     * \brief Get the current menu widget.
+     * \return The menu widget pointer.
+     */
+    QWidget *menuWidget() const;
+
 signals:
 
 public slots:
+    /*!
+     * \brief Set the target menu widget.
+     * \param menuWidget The menu widget.
+     */
+    void setMenuWidget(KNMenuBase *menuWidget);
+
     /*!
      * \brief Show the menu and the menu layer.
      */
@@ -49,18 +62,19 @@ public slots:
 
 protected:
     /*!
-     * \brief Reimplemented from QWidget::paintEvent().
-     */
-    void paintEvent(QPaintEvent *event) override;
-
-    /*!
      * \brief Reimplemented from QWidget::keyPressEvent().
      */
     void keyPressEvent(QKeyEvent *event) override;
 
+    /*!
+     * \brief Reimplemented from QWidget::resizeEvent().
+     */
+    void resizeEvent(QResizeEvent *event) override;
+
 private:
     QTimeLine *m_timeLine;
-    int m_darkness;
+    KNMenuBase *m_menuWidget;
+    bool m_showing;
 };
 
 #endif // KNMENULAYER_H

@@ -44,7 +44,6 @@ SOURCES += \
     sdk/kntextclock.cpp \
     sdk/knhwidgetswitcher.cpp \
     sdk/knwidgetswitcher.cpp \
-    plugin/knappchapterselector/knappchapterselector.cpp \
     plugin/knappchapterselector/knchaptermodel.cpp \
     plugin/knappchapterselector/knproxychaptermodel.cpp \
     plugin/knappchapterselector/knchaptersearcher.cpp \
@@ -52,7 +51,10 @@ SOURCES += \
     sdk/knmenulayer.cpp \
     sdk/knclocklabel.cpp \
     sdk/knsaostyle.cpp \
-    sdk/knscrollarea.cpp
+    sdk/knscrollarea.cpp \
+    plugin/knlocationmenu/knlocationmenu.cpp \
+    plugin/knappchapterselector/knchapterselector.cpp \
+    plugin/knappchapterselector/knappchapterselector.cpp
 
 HEADERS += \
     sdk/knsingletonapplication.h \
@@ -77,7 +79,6 @@ HEADERS += \
     sdk/kntextclock.h \
     sdk/knhwidgetswitcher.h \
     sdk/knwidgetswitcher.h \
-    plugin/knappchapterselector/knappchapterselector.h \
     plugin/knappchapterselector/knchaptermodel.h \
     plugin/knappchapterselector/knproxychaptermodel.h \
     plugin/knappchapterselector/knchaptersearcher.h \
@@ -86,7 +87,11 @@ HEADERS += \
     sdk/knclocklabel.h \
     sdk/knappchapterselectorbase.h \
     sdk/knsaostyle.h \
-    sdk/knscrollarea.h
+    sdk/knscrollarea.h \
+    plugin/knlocationmenu/knlocationmenu.h \
+    plugin/knappchapterselector/knchapterselector.h \
+    plugin/knappchapterselector/knappchapterselector.h \
+    sdk/knmenubase.h
 
 RESOURCES += \
     resource/resource.qrc

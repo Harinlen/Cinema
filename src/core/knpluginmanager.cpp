@@ -23,7 +23,10 @@
 #include "knglobal.h"
 #include "knconfiguremanager.h"
 
+#include "knmenubase.h"
+
 #include "plugin/knappchapterselector/knappchapterselector.h"
+#include "plugin/knlocationmenu/knlocationmenu.h"
 
 #include "knpluginmanager.h"
 
@@ -53,6 +56,7 @@ void KNPluginManager::setMainWindow(KNMainWindow *mainWindow)
 void KNPluginManager::loadPlugins()
 {
     m_mainWindow->appendAppWidget(new KNAppChapterSelector());
+    m_mainWindow->setMenuWidget(new KNLocationMenu());
 }
 
 void KNPluginManager::launchApplication()

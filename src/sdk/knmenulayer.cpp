@@ -19,25 +19,32 @@
 #include <QKeyEvent>
 #include <QTimeLine>
 
+#include "knmenubase.h"
+#include "kndpimanager.h"
 #include "knaudiomanager.h"
 
 #include "knmenulayer.h"
 
 #define Darkness    157
-#define Duration    500
+#define Duration    333
+#define MenuWidth   480
 
 KNMenuLayer::KNMenuLayer(QWidget *parent) : QWidget(parent),
     m_timeLine(new QTimeLine(Duration, this)),
-    m_darkness(0)
+    m_menuWidget(nullptr),
+    m_showing(false)
 {
     setFocusPolicy(Qt::StrongFocus);
     //Configure the timeline.
     m_timeLine->setUpdateInterval(16);
     m_timeLine->setEasingCurve(QEasingCurve::OutCubic);
-    connect(m_timeLine, &QTimeLine::frameChanged, [=](int darkness)
+    connect(m_timeLine, &QTimeLine::frameChanged, [=](int offset)
     {
         //Save the darkness.
-        m_darkness=darkness;
+        m_menuWidget->move(width()-offset, 0);
+        //Set the menu status.
+        m_menuWidget->setOpacity(m_showing?m_timeLine->currentValue():
+                                           1.0-m_timeLine->currentValue());
         //Update the widget.
         update();
     });
@@ -51,8 +58,10 @@ void KNMenuLayer::showMenu()
     {
         return;
     }
-    //Configure the time line.
-    m_timeLine->setFrameRange(m_darkness, Darkness);
+    m_showing=true;
+    //Configure the animation.
+    m_timeLine->setFrameRange(0, m_menuWidget->width());
+    //Start animation.
     m_timeLine->start();
     //Play the audio hint.
     knAudio->play(KNAudioManager::AudioMenuOpen);
@@ -66,8 +75,9 @@ void KNMenuLayer::hideMenu()
     {
         return;
     }
+    m_showing=false;
     //Configure the time line.
-    m_timeLine->setFrameRange(m_darkness, 0);
+    m_timeLine->setFrameRange(m_menuWidget->width(), 0);
     connect(m_timeLine, &QTimeLine::finished, [=]
     {
         //Disconnect the finished signal.
@@ -75,20 +85,10 @@ void KNMenuLayer::hideMenu()
         //Hide the widget.
         hide();
     });
-    //Play the audio hint.
-    knAudio->play(KNAudioManager::AudioMenuClose);
     //Start the animation.
     m_timeLine->start();
-}
-
-void KNMenuLayer::paintEvent(QPaintEvent *event)
-{
-    Q_UNUSED(event)
-    QPainter painter(this);
-    painter.setRenderHints(QPainter::Antialiasing |
-                           QPainter::SmoothPixmapTransform);
-    //Render the backgorund.
-    painter.fillRect(rect(), QColor(0, 0, 0, m_darkness));
+    //Play the audio hint.
+    knAudio->play(KNAudioManager::AudioMenuClose);
 }
 
 void KNMenuLayer::keyPressEvent(QKeyEvent *event)
@@ -103,4 +103,29 @@ void KNMenuLayer::keyPressEvent(QKeyEvent *event)
         break;
     }
     event->accept();
+}
+
+void KNMenuLayer::resizeEvent(QResizeEvent *event)
+{
+    QWidget::resizeEvent(event);
+    //Check the menu widget.
+    if(m_menuWidget)
+    {
+        //Update the menu widget size.
+        m_menuWidget->resize(knDpi->width(MenuWidth), height());
+    }
+}
+
+QWidget *KNMenuLayer::menuWidget() const
+{
+    return m_menuWidget;
+}
+
+void KNMenuLayer::setMenuWidget(KNMenuBase *menuWidget)
+{
+    //Save the menu widget pointer.
+    m_menuWidget = menuWidget;
+    //Transfer the relationship.
+    m_menuWidget->setParent(this);
+    m_menuWidget->setGeometry(width(), 0, knDpi->width(MenuWidth), height());
 }

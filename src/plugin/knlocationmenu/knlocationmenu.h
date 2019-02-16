@@ -15,28 +15,46 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-#ifndef KNAPPCHAPTERSELECTORBASE_H
-#define KNAPPCHAPTERSELECTORBASE_H
+#ifndef KNLOCATIONMENU_H
+#define KNLOCATIONMENU_H
 
-#include <QWidget>
+#include "knmenubase.h"
 
 /*!
- * \brief The KNAppChapterSelectorBase class provides the chapter select
- * interface.
+ * \brief The KNLocationMenu class provides a menu for managing the location.
  */
-class KNAppChapterSelectorBase : public QWidget
+class KNLocationMenu : public KNMenuBase
 {
     Q_OBJECT
 public:
     /*!
-     * \brief Construct a KNAppChapterSelectorBase widget.
+     * \brief Construct a KNLocationMenu widget.
      * \param parent The parent widget.
      */
-    KNAppChapterSelectorBase(QWidget *parent = nullptr) : QWidget(parent){}
+    explicit KNLocationMenu(QWidget *parent = nullptr);
 
 signals:
 
 public slots:
+    /*!
+     * \brief Reimplemented from KNMenuBase::setOpacity().
+     */
+    void setOpacity(qreal opacity) override;
+
+protected:
+    /*!
+     * \brief Reimplemented from QWidget::resizeEvent().
+     */
+    void resizeEvent(QResizeEvent *event) override;
+
+    /*!
+     * \brief Reimplemented from QWidget::paintEvent().
+     */
+    void paintEvent(QPaintEvent *event) override;
+
+private:
+    QLinearGradient m_backgroundGradient;
+    qreal m_opacity;
 };
 
-#endif // KNAPPCHAPTERSELECTORBASE_H
+#endif // KNLOCATIONMENU_H
