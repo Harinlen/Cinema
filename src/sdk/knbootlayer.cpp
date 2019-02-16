@@ -133,7 +133,8 @@ inline void KNBootLayer::updateFont()
     //Calculate the text font.
     int targetSize=qMax(static_cast<int>(0.026 * static_cast<qreal>(height())),
                         20);
-    textFont.setFamily("SST Roman");
+    textFont.setFamily("SST");
+    textFont.setStyleName("Roman");
     textFont.setPixelSize(targetSize);
     textFont.setKerning(true);
     textFont.setStretch(124);

@@ -49,7 +49,7 @@ KNChapterSelector::KNChapterSelector(QWidget *parent) :
     m_itemSpacing(knDpi->height(BlockSpacing)),
     m_startX(0),
     m_currentIndex(-1),
-    m_currentState(StateShowing)
+    m_currentState(StateNoDirectory)
 {
     setObjectName("AppChapterSelector");
     //Register types.
@@ -140,13 +140,15 @@ int KNChapterSelector::indexAt(const QPoint &point) const
     //Check if the category row vaild.
     //We should check the category proxy model, because the point is a display
     //variable.
-    return (categoryRow>-1 && categoryRow<186) ? categoryRow : -1;
+    return (categoryRow>-1 && categoryRow<m_proxyChapterModel->rowCount()) ?
+                categoryRow : -1;
 }
 
 void KNChapterSelector::scrollTo(int index, ScrollHint hint)
 {
     //Check the index and the validation of max column count.
-    if(index<0 || index>=186 || m_maxColumnCount==0 ||
+    if(index<0 || index>=m_proxyChapterModel->rowCount() ||
+            m_maxColumnCount==0 ||
             //Check whether we need to move the vertical scroll bar
             (hint==EnsureVisible &&
              rect().contains(visualRect(index), true)))
@@ -195,7 +197,8 @@ void KNChapterSelector::reset()
 void KNChapterSelector::setCurrentIndex(int index)
 {
     //Check the index validation.
-    if(index<-1 || index>=186 || m_currentIndex==index)
+    if(index<-1 || index>=m_proxyChapterModel->rowCount() ||
+            m_currentIndex==index)
     {
         return;
     }
@@ -235,7 +238,7 @@ void KNChapterSelector::paintEvent(QPaintEvent *event)
             itemX=itemStartX, currentColumn=0;
         //Clear the painter.
         painter.setPen(Qt::NoPen);
-        while(index<186)
+        while(index<m_proxyChapterModel->rowCount())
         {
             QRect itemRect(itemX, itemY, m_itemWidth, m_itemHeight);
 
@@ -292,43 +295,52 @@ void KNChapterSelector::resizeEvent(QResizeEvent *event)
     m_startX=(width()-m_maxColumnCount*(m_itemSpacing+m_itemWidth)-
               m_itemSpacing)>>1;
     //Update parameters.
-//    updateParameters(m_chapterModel->rowCount());
-    updateParameters(186);
+    updateParameters(m_proxyChapterModel->rowCount());
 }
 
 void KNChapterSelector::keyPressEvent(QKeyEvent *event)
 {
-    switch(event->key())
+    //Check the current state.
+    if(m_currentState==StateSelect)
     {
-    case Qt::Key_W: //Up
-        if(m_currentIndex>=m_maxColumnCount)
+        //Only allowed operate for select mode.
+        switch(event->key())
         {
-            m_currentIndex-=m_maxColumnCount;
+        case Qt::Key_W: //Up
+            if(m_currentIndex>=m_maxColumnCount)
+            {
+                m_currentIndex-=m_maxColumnCount;
+                validAndMoveToCurrent();
+            }
+            event->accept();
+            break;
+        case Qt::Key_S: //Down
+            m_currentIndex+=m_maxColumnCount;
             validAndMoveToCurrent();
+            event->accept();
+            break;
+        case Qt::Key_A: //Left
+            --m_currentIndex;
+            validAndMoveToCurrent();
+            event->accept();
+            break;
+        case Qt::Key_D: //Right
+            ++m_currentIndex;
+            validAndMoveToCurrent();
+            event->accept();
+            break;
+        case Qt::Key_Enter: //Enter
+            event->accept();
+            break;
+        default:
+            event->ignore();
+            break;
         }
-        event->accept();
-        break;
-    case Qt::Key_S: //Down
-        m_currentIndex+=m_maxColumnCount;
-        validAndMoveToCurrent();
-        event->accept();
-        break;
-    case Qt::Key_A: //Left
-        --m_currentIndex;
-        validAndMoveToCurrent();
-        event->accept();
-        break;
-    case Qt::Key_D: //Right
-        ++m_currentIndex;
-        validAndMoveToCurrent();
-        event->accept();
-        break;
-    case Qt::Key_Enter: //Enter
-        event->accept();
-        break;
-    default:
+    }
+    else
+    {
+        //Not allowed to operate in anyother modes.
         event->ignore();
-        break;
     }
 }
 
@@ -362,9 +374,9 @@ inline void KNChapterSelector::validAndMoveToCurrent()
     {
         m_currentIndex=0;
     }
-    else if(m_currentIndex>=186)
+    else if(m_currentIndex>=m_proxyChapterModel->rowCount())
     {
-        m_currentIndex=185;
+        m_currentIndex=m_proxyChapterModel->rowCount()-1;
     }
     //Play the audio.
     knAudio->play(KNAudioManager::AudioMove);
@@ -431,7 +443,7 @@ inline int KNChapterSelector::indexScrollBarValue(int index, ScrollHint hint)
 QRect KNChapterSelector::itemContentRect(int index) const
 {
     //Check the index first.
-    if(index<0 || index>186 || m_maxColumnCount==0)
+    if(index<0 || index>m_proxyChapterModel->rowCount() || m_maxColumnCount==0)
     {
         return QRect();
     }

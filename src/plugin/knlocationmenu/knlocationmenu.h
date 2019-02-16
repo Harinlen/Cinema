@@ -20,8 +20,10 @@
 
 #include "knmenubase.h"
 
+class KNConfigure;
 /*!
- * \brief The KNLocationMenu class provides a menu for managing the location.
+ * \brief The KNLocationMenu class provides a menu for managing the location. It
+ * supports for adding and switching locations.
  */
 class KNLocationMenu : public KNMenuBase
 {
@@ -54,6 +56,7 @@ protected:
 
 private:
     QLinearGradient m_backgroundGradient;
+    KNConfigure *m_configure;
     qreal m_opacity;
 };
 

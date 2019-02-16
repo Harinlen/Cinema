@@ -8,6 +8,9 @@ QT += \
 
 CONFIG += c++17
 
+# Add the lib based on.
+LIBS += -lbass
+
 win32: {
     # Add Windows series specific platform sources.
     SOURCES += sdk/knlockedfile_win.cpp
@@ -54,7 +57,8 @@ SOURCES += \
     sdk/knscrollarea.cpp \
     plugin/knlocationmenu/knlocationmenu.cpp \
     plugin/knappchapterselector/knchapterselector.cpp \
-    plugin/knappchapterselector/knappchapterselector.cpp
+    plugin/knappchapterselector/knappchapterselector.cpp \
+    plugin/knlocationmenu/knmenuitem.cpp
 
 HEADERS += \
     sdk/knsingletonapplication.h \
@@ -91,7 +95,8 @@ HEADERS += \
     plugin/knlocationmenu/knlocationmenu.h \
     plugin/knappchapterselector/knchapterselector.h \
     plugin/knappchapterselector/knappchapterselector.h \
-    sdk/knmenubase.h
+    sdk/knmenubase.h \
+    plugin/knlocationmenu/knmenuitem.h
 
 RESOURCES += \
     resource/resource.qrc

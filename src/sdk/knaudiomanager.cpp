@@ -15,9 +15,9 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-#include <QMediaPlayer>
 #include <QDir>
 
+#include "bass.h"
 #include "knutil.h"
 
 #include "knaudiomanager.h"
@@ -45,16 +45,27 @@ void KNAudioManager::setAudioDirectory(const QString &audioDirPath)
     //Set the directory.
     for(int i=0; i<AudioTypeCount; ++i)
     {
-        m_audio[i]=QMediaContent(QUrl::fromLocalFile(
-                                     m_audioDirectory.filePath(
-                                         m_fileName.at(i))));
+        //Try to load the file.
+        QString filePath=m_audioDirectory.filePath(m_fileName.at(i));
+        #ifdef Q_OS_WIN
+            std::wstring uniPath=filePath.toStdWString();
+        #endif
+        #ifdef Q_OS_UNIX
+            std::string uniPath=filePath.toStdString();
+        #endif
+        //Load all the files.
+        m_audioChannel[i]=BASS_StreamCreateFile(FALSE, uniPath.data(), 0, 0, 0);
     }
 }
 
 KNAudioManager::KNAudioManager(QObject *parent) : QObject(parent),
-    m_audioDirectory(QDir()),
-    m_audioPlayer(new QMediaPlayer(this))
+    m_audioDirectory(QDir())
 {
+    //Initial the bass.
+    // enable "Default" device that follows default device changes
+    BASS_SetConfig(BASS_CONFIG_DEV_DEFAULT, 1);
+    // initialize default output device
+    BASS_Init(-1, 44100, 0, nullptr, nullptr);
     //Load and set.
     m_fileName.reserve(AudioTypeCount);
     m_fileName << "startup.wav" << "move.wav" << "ok.wav" << "cancel.wav"
@@ -70,13 +81,6 @@ void KNAudioManager::play(int type)
         return;
     }
     //Check the audio player current playing status.
-    if(m_audioPlayer->state() != QMediaPlayer::StoppedState)
-    {
-        //Stop the current playing audio.
-        m_audioPlayer->stop();
-    }
-    //Set the media content according to the type.
-    m_audioPlayer->setMedia(m_audio[type]);
-    //Play the audio.
-    m_audioPlayer->play();
+    //Play the thread.
+    BASS_ChannelPlay(m_audioChannel[type], TRUE);
 }

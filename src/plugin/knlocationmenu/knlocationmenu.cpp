@@ -16,13 +16,18 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 #include <QPainter>
+#include <QBoxLayout>
 #include <QLinearGradient>
 
+#include "knconfigure.h"
+#include "knmenuitem.h"
+#include "knglobal.h"
 #include "kndpimanager.h"
 
 #include "knlocationmenu.h"
 
 KNLocationMenu::KNLocationMenu(QWidget *parent) : KNMenuBase(parent),
+    m_configure(knGlobal->userConfigure()->getConfigure("Locations")),
     m_opacity(0.0)
 {
     //Configure the gradient initial point.
@@ -30,6 +35,20 @@ KNLocationMenu::KNLocationMenu(QWidget *parent) : KNMenuBase(parent),
     //Configure the gradient color.
     m_backgroundGradient.setColorAt(0.0, QColor(0, 0, 0, 230));
     m_backgroundGradient.setColorAt(1.0, QColor(0, 0, 0, 178));
+
+    //Debug layout.
+    QBoxLayout *mainLayout=new QBoxLayout(QBoxLayout::TopToBottom, this);
+    mainLayout->setContentsMargins(knDpi->margins(14, 14, 119, 14));
+    mainLayout->setSpacing(0);
+    setLayout(mainLayout);
+
+    mainLayout->addStretch();
+    mainLayout->addWidget(new KNMenuItem("Automatic", this));
+    mainLayout->addWidget(new KNMenuItem("480p", this));
+    mainLayout->addWidget(new KNMenuItem("720p", this));
+    mainLayout->addWidget(new KNMenuItem("1080i", this));
+    mainLayout->addWidget(new KNMenuItem("1080p", this));
+    mainLayout->addStretch();
 }
 
 void KNLocationMenu::setOpacity(qreal opacity)

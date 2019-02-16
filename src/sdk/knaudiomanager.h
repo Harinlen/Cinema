@@ -19,13 +19,13 @@
 #define KNAUDIOENGINE_H
 
 #include <QDir>
-#include <QMediaContent>
+
+#include "bass.h"
 
 #include <QObject>
 
 #define knAudio (KNAudioManager::instance())
 
-class QMediaPlayer;
 /*!
  * \brief The KNAudioEngine class provides an audio engine for playing hint
  * sounds. All the sounds will be loaded at the loading time when the directory
@@ -82,9 +82,8 @@ private:
     KNAudioManager(KNAudioManager &&);
 
     QStringList m_fileName;
-    QMediaContent m_audio[AudioTypeCount];
+    DWORD m_audioChannel[AudioTypeCount];
     QDir m_audioDirectory;
-    QMediaPlayer *m_audioPlayer;
 
 };
 
