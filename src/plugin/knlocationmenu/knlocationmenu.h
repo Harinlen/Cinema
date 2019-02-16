@@ -20,7 +20,10 @@
 
 #include "knmenubase.h"
 
+class QBoxLayout;
+class QSignalMapper;
 class KNConfigure;
+class KNMenuItem;
 /*!
  * \brief The KNLocationMenu class provides a menu for managing the location. It
  * supports for adding and switching locations.
@@ -35,6 +38,12 @@ public:
      */
     explicit KNLocationMenu(QWidget *parent = nullptr);
 
+    /*!
+     * \brief Add menu item.
+     * \param item The menu item widget pointer.
+     */
+    void addItem(KNMenuItem *item);
+
 signals:
 
 public slots:
@@ -42,6 +51,29 @@ public slots:
      * \brief Reimplemented from KNMenuBase::setOpacity().
      */
     void setOpacity(qreal opacity) override;
+
+    /*!
+     * \brief Reimplemented from KNMenuBase::loadFromConfigure().
+     */
+    void loadFromConfigure() override;
+
+    /*!
+     * \brief Reimplemented from KNMenuBase::prepareHover().
+     */
+    void prepareHover() override;
+
+    /*!
+     * \brief Set the current hover index.
+     * \param index The index of the item.
+     * \param animated Whether the select operation needs an animation.
+     */
+    void setCurrentHover(int index, bool animated=true);
+
+    /*!
+     * \brief Set the current loading index.
+     * \param index The index of the selected item.
+     */
+    void setCurrentIndex(int index);
 
 protected:
     /*!
@@ -54,10 +86,25 @@ protected:
      */
     void paintEvent(QPaintEvent *event) override;
 
+    /*!
+     * \brief Reimplemented from QWidget::keyPressEvent().
+     */
+    void keyPressEvent(QKeyEvent *event) override;
+
+private slots:
+    void retranslate();
+    void onItemHover();
+    void onItemClicked();
+
 private:
     QLinearGradient m_backgroundGradient;
+    QStringList m_pathList;
+    QList<KNMenuItem *> m_itemList;
+    QBoxLayout *m_mainLayout;
+    KNMenuItem *m_addPathItem;
     KNConfigure *m_configure;
     qreal m_opacity;
+    int m_currentHover, m_currentIndex;
 };
 
 #endif // KNLOCATIONMENU_H

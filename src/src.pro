@@ -58,7 +58,8 @@ SOURCES += \
     plugin/knlocationmenu/knlocationmenu.cpp \
     plugin/knappchapterselector/knchapterselector.cpp \
     plugin/knappchapterselector/knappchapterselector.cpp \
-    plugin/knlocationmenu/knmenuitem.cpp
+    plugin/knlocationmenu/knmenuitem.cpp \
+    plugin/knlocationmenu/knmenuitemglobal.cpp
 
 HEADERS += \
     sdk/knsingletonapplication.h \
@@ -96,7 +97,8 @@ HEADERS += \
     plugin/knappchapterselector/knchapterselector.h \
     plugin/knappchapterselector/knappchapterselector.h \
     sdk/knmenubase.h \
-    plugin/knlocationmenu/knmenuitem.h
+    plugin/knlocationmenu/knmenuitem.h \
+    plugin/knlocationmenu/knmenuitemglobal.h
 
 RESOURCES += \
     resource/resource.qrc

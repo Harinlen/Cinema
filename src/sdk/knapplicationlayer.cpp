@@ -51,6 +51,8 @@ KNApplicationLayer::KNApplicationLayer(QWidget *parent) : QWidget(parent),
             //Set focus to the panel.
             currentPanel->setFocus();
         }
+        //Start to load the configure.
+        emit requireLoadConfigure();
     });
 }
 

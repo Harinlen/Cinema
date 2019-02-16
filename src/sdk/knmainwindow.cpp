@@ -26,6 +26,7 @@
 #include "knapplicationlayer.h"
 #include "knmenulayer.h"
 #include "knbackground.h"
+#include "knmenubase.h"
 
 #include "knmainwindow.h"
 
@@ -85,6 +86,9 @@ void KNMainWindow::setMenuWidget(KNMenuBase *menuWidget)
 {
     //Give the menu to the menu layer.
     m_menuLayer->setMenuWidget(menuWidget);
+    //Link the signal.
+    connect(m_applicationLayer, &KNApplicationLayer::requireLoadConfigure,
+            menuWidget, &KNMenuBase::loadFromConfigure);
 }
 
 void KNMainWindow::resizeEvent(QResizeEvent *event)

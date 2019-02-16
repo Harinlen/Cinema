@@ -18,30 +18,30 @@
 #ifndef KNMENUITEM_H
 #define KNMENUITEM_H
 
-#include <QWidget>
+#include <QAbstractButton>
 
 class QTimeLine;
 /*!
  * \brief The KNMenuItem class provides the menu item that display in the menu
  * container.
  */
-class KNMenuItem : public QWidget
+class KNMenuItem : public QAbstractButton
 {
     Q_OBJECT
 public:
     /*!
      * \brief Construct a KNMenuItem widget.
-     * \param text The menu item display text.
      * \param parent The parent widget.
+     * \param text The menu item display text.
      */
-    explicit KNMenuItem(const QString &text = QString(),
-                        QWidget *parent = nullptr);
+    explicit KNMenuItem(QWidget *parent = nullptr,
+                        const QString &text=QString());
 
     /*!
-     * \brief Get the current item text.
-     * \return The current item text.
+     * \brief Whether the item is selected.
+     * \return The menu item is selected.
      */
-    QString text() const;
+    bool isSelected() const;
 
 signals:
     /*!
@@ -51,32 +51,27 @@ signals:
 
 public slots:
     /*!
-     * \brief Set the text of the current menu item.
-     * \param text The item text.
+     * \brief Manually set whether the menu item is hovering.
+     * \param isHover True for hover the item.
      */
-    void setText(const QString &text);
+    void setHovering(bool isHover, bool animated=true);
+
+    /*!
+     * \brief Set to display the selected mark.
+     * \param isSelected Whether the menu item is clicked.
+     */
+    void setSelected(bool isSelected);
 
 protected:
     /*!
-     * \brief Reimplemented from QWidget::enterEvent().
+     * \brief Reimplemented from QAbstractButton::enterEvent().
      */
     void enterEvent(QEvent *event) override;
 
     /*!
-     * \brief Reimplemented from QWidget::leaveEvent().
-     */
-    void leaveEvent(QEvent *event) override;
-
-    /*!
-     * \brief Reimplmented from QWidget::paintEvent().
+     * \brief Reimplmented from QAbstractButton::paintEvent().
      */
     void paintEvent(QPaintEvent *event) override;
-
-    /*!
-     * \brief Manually set whether the menu item is hovering.
-     * \param isHover True for hover the item.
-     */
-    void setHovering(bool isHover);
 
 private:
     inline void startAnimeFadeIn();

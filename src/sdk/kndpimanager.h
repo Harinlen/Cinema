@@ -180,7 +180,7 @@ private:
         return m_yScaler*rawHeight;
     }
 
-    static KNDpiManager *m_instance;
+    static KNDpiManager *ins;
 
     qreal m_xScaler, m_yScaler;
 };

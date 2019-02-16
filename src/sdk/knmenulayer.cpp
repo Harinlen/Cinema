@@ -59,14 +59,17 @@ void KNMenuLayer::showMenu()
         return;
     }
     m_showing=true;
+    //Prepare the hovering.
+    m_menuWidget->prepareHover();
     //Configure the animation.
     m_timeLine->setFrameRange(0, m_menuWidget->width());
     //Start animation.
+    m_menuWidget->move(width(), 0);
     m_timeLine->start();
     //Play the audio hint.
     knAudio->play(KNAudioManager::AudioMenuOpen);
     //Change the focus.
-    setFocus();
+    m_menuWidget->setFocus();
 }
 
 void KNMenuLayer::hideMenu()
@@ -125,7 +128,13 @@ void KNMenuLayer::setMenuWidget(KNMenuBase *menuWidget)
 {
     //Save the menu widget pointer.
     m_menuWidget = menuWidget;
+    //Link the request signal from menu widget.
+    connect(m_menuWidget, &KNMenuBase::requireHideMenu,
+            this, &KNMenuLayer::hideMenu);
     //Transfer the relationship.
     m_menuWidget->setParent(this);
-    m_menuWidget->setGeometry(width(), 0, knDpi->width(MenuWidth), height());
+    m_menuWidget->move(width(), 0);
+    m_menuWidget->resize(knDpi->width(MenuWidth), height());
+    //Transfer the focus proxy.
+    setFocusProxy(m_menuWidget);
 }

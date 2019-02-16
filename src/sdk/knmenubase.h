@@ -35,6 +35,16 @@ public:
     KNMenuBase(QWidget *parent = nullptr):QWidget(parent){}
 
 signals:
+    /*!
+     * \brief Request to hide the menu.
+     */
+    void requireHideMenu();
+
+    /*!
+     * \brief When the library path is changed, this signal is emitted.
+     * \param libraryPath The new library path.
+     */
+    void libraryPathChanged(QString libraryPath);
 
 public slots:
     /*!
@@ -42,6 +52,16 @@ public slots:
      * \param opacity The opacity, the value is between 0 to 1.
      */
     virtual void setOpacity(qreal opacity) = 0;
+
+    /*!
+     * \brief load the path from configure.
+     */
+    virtual void loadFromConfigure() = 0;
+
+    /*!
+     * \brief Let the menu hover move to the current select item.
+     */
+    virtual void prepareHover() = 0;
 };
 
 #endif // KNMENUBASE_H

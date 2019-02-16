@@ -20,19 +20,19 @@ Foundation,
 
 #include <QDebug>
 
-KNDpiManager *KNDpiManager::m_instance=nullptr;
+KNDpiManager *KNDpiManager::ins=nullptr;
 
 KNDpiManager *KNDpiManager::instance()
 {
-    return m_instance;
+    return ins;
 }
 
 void KNDpiManager::initial(QObject *parent)
 {
     //Set the current instance as the singleton instance.
-    if(m_instance==nullptr)
+    if(ins==nullptr)
     {
-        m_instance=new KNDpiManager(parent);
+        ins=new KNDpiManager(parent);
     }
 }
 

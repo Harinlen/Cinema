@@ -46,7 +46,6 @@ signals:
      */
     void requireSaveConfigure();
 
-
 public slots:
     /*!
      * \brief Append an application widget to the container.

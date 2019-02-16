@@ -19,6 +19,7 @@
 #include <QTimeLine>
 
 #include "kndpimanager.h"
+#include "knmenuitemglobal.h"
 
 #include "knmenuitem.h"
 
@@ -26,12 +27,16 @@
 #define FadeInDuration  167
 #define TextX           57
 
-KNMenuItem::KNMenuItem(const QString &text, QWidget *parent) : QWidget(parent),
+KNMenuItem::KNMenuItem(QWidget *parent, const QString &text) :
+    QAbstractButton(parent),
     m_fadeAnimation(new QTimeLine(200, this)),
     m_opacity(0.0),
-    m_borderWidth(1)
+    m_borderWidth(1),
+    m_isSelected(false),
+    m_isHover(false)
 {
     //Set properties.
+    setFocusPolicy(Qt::StrongFocus);
     setMinimumWidth(knDpi->width(347));
     setFixedHeight(knDpi->height(75));
     setText(text);
@@ -60,17 +65,9 @@ KNMenuItem::KNMenuItem(const QString &text, QWidget *parent) : QWidget(parent),
 void KNMenuItem::enterEvent(QEvent *event)
 {
     //Enter the widget.
-    QWidget::enterEvent(event);
-    //Start fade in.
-    startAnimeFadeIn();
-}
-
-void KNMenuItem::leaveEvent(QEvent *event)
-{
-    //Leave the widget.
-    QWidget::leaveEvent(event);
-    //Start fade out.
-    startAnimeFadeOut();
+    QAbstractButton::enterEvent(event);
+    //Emit the signal.
+    emit hovering();
 }
 
 void KNMenuItem::paintEvent(QPaintEvent *event)
@@ -80,12 +77,21 @@ void KNMenuItem::paintEvent(QPaintEvent *event)
     painter.setRenderHints(QPainter::Antialiasing |
                            QPainter::TextAntialiasing |
                            QPainter::SmoothPixmapTransform, true);
+    //Check whether the menu item is checked.
+    if(m_isSelected)
+    {
+        //Draw the selected tick.
+        const QPixmap &tickIcon=KNMenuItemGlobal::instance()->tickIcon();
+        painter.drawPixmap(knDpi->width(14), (height()-tickIcon.height())>>1,
+                           tickIcon);
+    }
     //Draw the content.
-    //!FIXME: add code here.;
     painter.setPen(QColor(255, 255, 255));
-    painter.drawText(QRect(TextX, 0, width(), height()),
+    int textX = knDpi->width(TextX), textWidth=width()-textX;
+    painter.drawText(QRect(textX, 0, textWidth, height()),
                      Qt::AlignLeft | Qt::AlignVCenter,
-                     m_text);
+                     fontMetrics().elidedText(text(), Qt::ElideRight,
+                                              textWidth));
     //Draw the border.
     QPen border;
     border.setColor(QColor(255, 255, 255));
@@ -95,22 +101,32 @@ void KNMenuItem::paintEvent(QPaintEvent *event)
     painter.drawRect(rect());
 }
 
-void KNMenuItem::setHovering(bool isHover)
+void KNMenuItem::setHovering(bool isHover, bool animated)
 {
     if(m_isHover!=isHover)
     {
         //Save the hover state.
         m_isHover=isHover;
-        //Must be different.
-        if(m_isHover)
+        //Must be different, check the animation settings.
+        if(animated)
         {
-            //Start fade in.
-            startAnimeFadeIn();
+            //Play the specific animation.
+            if(m_isHover)
+            {
+                //Start fade in.
+                startAnimeFadeIn();
+            }
+            else
+            {
+                //Start fade out.
+                startAnimeFadeOut();
+            }
         }
         else
         {
-            //Start fade out.
-            startAnimeFadeOut();
+            //For non-animated, we have to change the opacity.
+            m_opacity = m_isHover ? 1.0 : 0.0;
+            m_borderWidth = m_isHover ? 4 : 1;
         }
     }
     //Repaint the widget.
@@ -126,8 +142,6 @@ inline void KNMenuItem::startAnimeFadeIn()
     m_fadeAnimation->setFrameRange(static_cast<int>(m_opacity*255.0), 255);
     //Start the fade animation.
     m_fadeAnimation->start();
-    //Emit hovering state.
-    emit hovering();
 }
 
 inline void KNMenuItem::startAnimeFadeOut()
@@ -143,15 +157,15 @@ inline void KNMenuItem::startAnimeFadeOut()
     m_isHover=false;
 }
 
-QString KNMenuItem::text() const
+bool KNMenuItem::isSelected() const
 {
-    return m_text;
+    return m_isSelected;
 }
 
-void KNMenuItem::setText(const QString &text)
+void KNMenuItem::setSelected(bool isSelected)
 {
-    //Set the text.
-    m_text = text;
-    //Update the widget.
+    //Save the selected state.
+    m_isSelected = isSelected;
+    //Update the item widget.
     update();
 }

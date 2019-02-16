@@ -39,6 +39,10 @@ public:
     explicit KNApplicationLayer(QWidget *parent = nullptr);
 
 signals:
+    /*!
+     * \brief Request for loading configure.
+     */
+    void requireLoadConfigure();
 
 public slots:
     /*!
