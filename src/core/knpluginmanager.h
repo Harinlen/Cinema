@@ -21,6 +21,12 @@
 #include <QObject>
 
 class KNMainWindow;
+class KNAppChapterSelectorBase;
+class KNMenuBase;
+/*!
+ * \brief The KNPluginManager class is the manager of all the classes for the
+ * entire application. It manages all the plugins.
+ */
 class KNPluginManager : public QObject
 {
     Q_OBJECT
@@ -57,7 +63,12 @@ public slots:
 
 private:
     inline void setApplicationInformation();
+    void loadChapterSelector(KNAppChapterSelectorBase *chapterSelector);
+    void loadLocationMenu(KNMenuBase *locationMenu);
     KNMainWindow *m_mainWindow;
+
+    KNAppChapterSelectorBase *m_chapterSelector;
+    KNMenuBase *m_locationMenu;
 };
 
 #endif // KNPLUGINMANAGER_H

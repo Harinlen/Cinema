@@ -56,6 +56,11 @@ public slots:
      */
     void showAnimation();
 
+    /*!
+     * \brief Set focus to the current application widget.
+     */
+    void setWidgetFocus();
+
 protected:
     /*!
      * \brief Reimplemented from QWidget::resizeEvent().

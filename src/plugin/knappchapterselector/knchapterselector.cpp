@@ -18,9 +18,9 @@
 #include <QTimeLine>
 #include <QScrollBar>
 #include <QPainter>
+#include <QTimer>
 
 #include "knaudiomanager.h"
-#include "knchapterutil.h"
 #include "kndpimanager.h"
 #include "knchaptersearcher.h"
 #include "knchaptermodel.h"
@@ -34,22 +34,31 @@
 
 #define BlockWidth      220
 #define BlockHeight     356
-#define BlockSpacing    5
+#define BlockSpacing    10
+#define BorderWidth     6
+#define TextMargin      10
+#define IconSize        64
 
 KNChapterSelector::KNChapterSelector(QWidget *parent) :
     KNScrollArea(parent),
     m_chapterModel(new KNChapterModel(this)),
     m_proxyChapterModel(new KNProxyChapterModel(this)),
     m_chapterSearcher(new KNChapterSearcher()),
+    m_loadingTimer(new QTimer(this)),
     m_scrollAnime(new QTimeLine(200, this)),
     m_hideAnimation(new QTimeLine(200, this)),
     m_maxColumnCount(1),
     m_itemWidth(knDpi->width(BlockWidth)),
     m_itemHeight(knDpi->height(BlockHeight)),
     m_itemSpacing(knDpi->height(BlockSpacing)),
+    m_borderWidth(knDpi->width(BorderWidth)),
     m_startX(0),
     m_currentIndex(-1),
-    m_currentState(StateNoDirectory)
+    m_currentState(StateNoDirectory),
+    m_loadingIndex(0),
+    m_loadingWidth(0),
+    m_textMargin(knDpi->width(TextMargin)),
+    m_repeat(false)
 {
     setObjectName("AppChapterSelector");
     //Register types.
@@ -60,6 +69,17 @@ KNChapterSelector::KNChapterSelector(QWidget *parent) :
     setFrameStyle(QFrame::NoFrame);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    //Configure the font.
+    m_hintTextFont=font();
+    m_hintTextFont.setFamily("SST Light");
+    m_hintTextFont.setPixelSize(knDpi->height(31));
+    m_loadingFont=m_hintTextFont;
+    m_loadingFont.setPixelSize(knDpi->height(31));
+    m_labelFont=m_hintTextFont;
+    m_labelFont.setFamily("SST Medium");
+    m_labelFont.setBold(true);
+    m_labelFont.setPixelSize(knDpi->height(24));
+    setFont(m_labelFont);
     //Set chapter model cover size.
     m_proxyChapterModel->setSourceModel(m_chapterModel);
     //Configure the chapter searcher.
@@ -72,13 +92,10 @@ KNChapterSelector::KNChapterSelector(QWidget *parent) :
             m_chapterSearcher, &KNChapterSearcher::cancel,
             Qt::QueuedConnection);
     connect(m_chapterSearcher, &KNChapterSearcher::searchComplete,
-            m_chapterModel, &KNChapterModel::setChapterList,
+            this, &KNChapterSelector::onSearchComplete,
             Qt::QueuedConnection);
     connect(m_chapterSearcher, &KNChapterSearcher::searchCancelled,
-            [=]
-    {
-        ;
-    });
+            this, &KNChapterSelector::startLoadDirectory);
     //Configure vertical scroll bar.
     verticalScrollBar()->setSingleStep(m_itemHeight>>2);
     verticalScrollBar()->setPageStep(m_itemHeight+m_itemSpacing);
@@ -94,6 +111,38 @@ KNChapterSelector::KNChapterSelector(QWidget *parent) :
         //Update the viewport.
         viewport()->update();
     });
+    //Configure the loading timer.
+    m_loadingTimer->setInterval(32);
+    connect(m_loadingTimer, &QTimer::timeout, [=]
+    {
+        //Update the current index.
+        ++m_loadingIndex;
+        if(m_loadingIndex>=LoadingFrameCount)
+        {
+            m_loadingIndex=0;
+        }
+        //Update the widget.
+        update();
+    });
+    //Configure the label gradient.
+    m_titleGradient.setStart(QPoint(0, 0));
+    m_titleGradient.setFinalStop(QPoint(0, knDpi->height(BlockHeight)));
+    m_titleGradient.setColorAt(0.0, QColor(0, 0, 0, 0));
+    m_titleGradient.setColorAt(0.80, QColor(0, 0, 0, 0));
+    m_titleGradient.setColorAt(1.0, QColor(0, 0, 0, 180));
+    //Load the loading frames.
+    char frameIndex[3];
+    frameIndex[2]='\0';
+    for(int i=0; i<LoadingFrameCount; ++i)
+    {
+        //Construct the frame data.
+        sprintf(frameIndex, "%02d", i+1);
+        //Load the pixmap.
+        m_loadingRing[i]=QPixmap(QString(":/loading/%1.png").arg(
+                                     QString(frameIndex))).scaled(
+                    knDpi->size(IconSize, IconSize),
+                    Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    }
     //Set the theme.
     knTheme->registerWidget(this);
     //Link multiple locale.
@@ -182,8 +231,18 @@ void KNChapterSelector::setCurrentDir(const QString &dirPath)
 {
     //Save the new directory path.
     m_currentDir.setPath(dirPath);
-    //Start the hide animation.
-    startHideAnimation();
+    //Check the current state, if the state is no directory, directly move to
+    //loading state.
+    if(m_currentState==StateNoDirectory)
+    {
+        //Start searching.
+        startLoadDirectory();
+    }
+    else
+    {
+        //Start the hide animation.
+        startHideAnimation();
+    }
 }
 
 void KNChapterSelector::reset()
@@ -222,8 +281,26 @@ void KNChapterSelector::paintEvent(QPaintEvent *event)
     {
     case StateNoDirectory:
         painter.setPen(palette().color(QPalette::WindowText));
+        painter.setFont(m_hintTextFont);
         painter.drawText(rect(), Qt::AlignCenter, m_addDirHint);
         break;
+    case StateLoading:
+    {
+        painter.setFont(m_loadingFont);
+        int contentSpacing=knDpi->width(30),
+            contentX=(width()-m_loadingRing[0].width()-
+                contentSpacing-m_loadingWidth)>>1;
+        //Draw the loading ring.
+        painter.drawPixmap(contentX,
+                           (height()-m_loadingRing[m_loadingIndex].height())>>1,
+                           m_loadingRing[m_loadingIndex]);
+        //Draw the text.
+        painter.drawText(contentX+m_loadingRing[m_loadingIndex].width()+
+                         contentSpacing, 0, width(), height(),
+                         Qt::AlignLeft | Qt::AlignVCenter,
+                         m_loadingHint);
+        break;
+    }
     case StateSelect:
     case StateHiding:
     case StateShowing:
@@ -241,17 +318,58 @@ void KNChapterSelector::paintEvent(QPaintEvent *event)
         while(index<m_proxyChapterModel->rowCount())
         {
             QRect itemRect(itemX, itemY, m_itemWidth, m_itemHeight);
-
-            //Draw the item.
-            //!FIXME: replace this part of code with the image.
-            painter.fillRect(itemRect,
-                             QColor(255, 255, 255, 108));
+            const ChapterUtil::ChapterData &chapterData=
+                    m_proxyChapterModel->chapter(index);
+            //Check the item cover image.
+            if(chapterData.cover.isNull())
+            {
+                //Null image detected, draw the default image instead.
+                painter.fillRect(itemRect,
+                                 QColor(255, 255, 255, 108));
+            }
+            else
+            {
+                //Draw the item cover image
+                painter.drawPixmap(itemX, itemY, chapterData.cover);
+            }
+            //Draw the title.
+            QColor penColor(255, 255, 255);
+            painter.save();
+            painter.translate(itemRect.topLeft());
+            painter.fillRect(QRect(0, 0, itemRect.width(), itemRect.height()),
+                             m_titleGradient);
+            painter.restore();
+            painter.setPen(penColor);
+            int textWidth=itemRect.width()-m_textMargin;
+            painter.drawText(itemRect.x()+(m_textMargin>>1),
+                             itemRect.y()+(m_textMargin>>1),
+                             textWidth,
+                             itemRect.height()-m_textMargin,
+                             Qt::AlignLeft | Qt::AlignBottom,
+                             fontMetrics().elidedText(chapterData.title,
+                                                      Qt::ElideRight,
+                                                      textWidth));
             //Draw the border around the selected item.
             if(index==m_currentIndex)
             {
-                painter.setPen(QColor(255, 255, 255, 200));
-                painter.drawRect(itemRect);
-                painter.setPen(Qt::NoPen);
+                QRect borderRect(itemRect.x()-(m_borderWidth>>1),
+                                 itemRect.y()-(m_borderWidth>>1),
+                                 itemRect.width()+m_borderWidth,
+                                 itemRect.height()+m_borderWidth);
+                painter.fillRect(borderRect.x(), borderRect.y(),
+                                 borderRect.width(), m_borderWidth, penColor);
+                painter.fillRect(borderRect.x(), borderRect.y(), m_borderWidth,
+                                 borderRect.height(), penColor);
+                painter.fillRect(borderRect.x()+borderRect.width()
+                                 -m_borderWidth,
+                                 borderRect.y(), m_borderWidth,
+                                 borderRect.height(),
+                                 penColor);
+                painter.fillRect(borderRect.x(),
+                                 borderRect.y()+borderRect.height()
+                                 -m_borderWidth,
+                                 borderRect.width(), m_borderWidth,
+                                 penColor);
             }
             //Move to the next item
             ++index;
@@ -300,6 +418,21 @@ void KNChapterSelector::resizeEvent(QResizeEvent *event)
 
 void KNChapterSelector::keyPressEvent(QKeyEvent *event)
 {
+    if(event->isAutoRepeat())
+    {
+        //Start repeat filter.
+        m_repeat=!m_repeat;
+        if(m_repeat)
+        {
+            event->ignore();
+            return;
+        }
+    }
+    else
+    {
+        //Reset the repeat flag.
+        m_repeat=false;
+    }
     //Check the current state.
     if(m_currentState==StateSelect)
     {
@@ -330,6 +463,9 @@ void KNChapterSelector::keyPressEvent(QKeyEvent *event)
             event->accept();
             break;
         case Qt::Key_Enter: //Enter
+        case Qt::Key_Return:
+            //Select the current item.
+            selectCurrentItem();
             event->accept();
             break;
         default:
@@ -346,19 +482,28 @@ void KNChapterSelector::keyPressEvent(QKeyEvent *event)
 
 void KNChapterSelector::mouseReleaseEvent(QMouseEvent *event)
 {
-    //Check the event position.
-    int clickedIndex=indexAt(event->pos());
-    if(clickedIndex!=-1)
+    //Check the current state.
+    if(m_currentState==StateSelect)
     {
-        setCurrentIndex(clickedIndex);
+        //Check the event position.
+        int clickedIndex=indexAt(event->pos());
+        if(clickedIndex!=-1)
+        {
+            //Select the item.
+            setCurrentIndex(clickedIndex);
+            selectCurrentItem();
+        }
+        //Accept all the release event.
+        event->accept();
     }
-    //Accept all the release event.
-    event->accept();
 }
 
 void KNChapterSelector::retranslate()
 {
     m_addDirHint=tr("Please add one directory in the menu.");
+    m_loadingHint=tr("Please wait...");
+    //Update loading width.
+    m_loadingWidth=QFontMetrics(m_loadingFont).width(m_loadingHint);
 }
 
 void KNChapterSelector::onRowCountChange(int itemCount)
@@ -367,7 +512,43 @@ void KNChapterSelector::onRowCountChange(int itemCount)
     updateParameters(itemCount);
 }
 
-inline void KNChapterSelector::validAndMoveToCurrent()
+void KNChapterSelector::onSearchComplete(
+        const QList<ChapterUtil::ChapterData> &chapterList)
+{
+    //Give the chapter list to chapter model.
+    m_chapterModel->setChapterList(chapterList);
+    //Update the row count.
+    onRowCountChange(chapterList.size());
+    //The widget would be changed into showing animation.
+    startShowAnimation();
+}
+
+void KNChapterSelector::startLoadDirectory()
+{
+    //Check the search worker state.
+    if(m_chapterSearcher->cancel())
+    {
+        //Wait until the searcher has been cancelled.
+        return;
+    }
+    //Check current directory existance.
+    if(m_currentDir.exists())
+    {
+        //Set the current mode to loading state.
+        startLoadingAnimation();
+        //Emit the loading signal.
+        emit requireStartSearch(m_currentDir.absolutePath());
+    }
+    else
+    {
+        //Direct show the error information.
+        m_currentState=StateSelect;
+        //Update the widget.
+        update();
+    }
+}
+
+void KNChapterSelector::validAndMoveToCurrent()
 {
     //Check index range.
     if(m_currentIndex<0)
@@ -386,9 +567,42 @@ inline void KNChapterSelector::validAndMoveToCurrent()
     scrollTo(m_currentIndex);
 }
 
-inline void KNChapterSelector::startHideAnimation()
+void KNChapterSelector::stopAllAnimations()
+{
+    //Stop the loading timer.
+    m_loadingTimer->stop();
+}
+
+void KNChapterSelector::startHideAnimation()
 {
     ;
+}
+
+void KNChapterSelector::startLoadingAnimation()
+{
+    stopAllAnimations();
+    //Set current state to loading.
+    m_currentState=StateLoading;
+    //Start the timer.
+    m_loadingIndex=0;
+    m_loadingTimer->start();
+}
+
+void KNChapterSelector::startShowAnimation()
+{
+    //Start drawing the shate showing.
+    //!FIXME: debugging.
+    m_currentState=StateSelect;
+    //Update the widget.
+    update();
+}
+
+inline void KNChapterSelector::selectCurrentItem()
+{
+    //Emit the signal for select the item.
+    emit itemSelected(m_currentIndex);
+    //Play the select sound.
+    knAudio->play(KNAudioManager::AudioOk);
 }
 
 inline void KNChapterSelector::updateParameters(int itemCount)

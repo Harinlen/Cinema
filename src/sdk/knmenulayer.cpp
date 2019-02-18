@@ -85,13 +85,13 @@ void KNMenuLayer::hideMenu()
     {
         //Disconnect the finished signal.
         disconnect(m_timeLine, &QTimeLine::finished, nullptr, nullptr);
+        //Emit the signal.
+        emit menuHideComplete();
         //Hide the widget.
         hide();
     });
     //Start the animation.
     m_timeLine->start();
-    //Play the audio hint.
-    knAudio->play(KNAudioManager::AudioMenuClose);
 }
 
 void KNMenuLayer::keyPressEvent(QKeyEvent *event)
@@ -99,13 +99,21 @@ void KNMenuLayer::keyPressEvent(QKeyEvent *event)
     switch(event->key())
     {
     case Qt::Key_Escape:
+        if(m_timeLine->state()==QTimeLine::Running)
+        {
+            event->ignore();
+            return;
+        }
+        //Play the audio hint.
+        knAudio->play(KNAudioManager::AudioMenuClose);
         //Hide the menu.
         hideMenu();
+        event->accept();
         break;
     default:
+        event->accept();
         break;
     }
-    event->accept();
 }
 
 void KNMenuLayer::resizeEvent(QResizeEvent *event)

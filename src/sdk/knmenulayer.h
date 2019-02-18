@@ -42,6 +42,10 @@ public:
     QWidget *menuWidget() const;
 
 signals:
+    /*!
+     * \brief When the menu is already hidden, this signal will be emitted.
+     */
+    void menuHideComplete();
 
 public slots:
     /*!

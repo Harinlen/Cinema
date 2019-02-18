@@ -71,6 +71,12 @@ void KNApplicationLayer::showAnimation()
     m_showAnimation->start();
 }
 
+void KNApplicationLayer::setWidgetFocus()
+{
+    //Check the current widget in the container.
+    m_container->currentWidget()->setFocus();
+}
+
 void KNApplicationLayer::appendAppWidget(QWidget *widget)
 {
     //Add widget to container.

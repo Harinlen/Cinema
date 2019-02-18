@@ -8,5 +8,25 @@
         <file>arrow_right.png</file>
         <file>arrow_up.png</file>
         <file>tick.png</file>
+        <file>loading/01.png</file>
+        <file>loading/02.png</file>
+        <file>loading/03.png</file>
+        <file>loading/04.png</file>
+        <file>loading/05.png</file>
+        <file>loading/06.png</file>
+        <file>loading/07.png</file>
+        <file>loading/08.png</file>
+        <file>loading/09.png</file>
+        <file>loading/10.png</file>
+        <file>loading/11.png</file>
+        <file>loading/12.png</file>
+        <file>loading/13.png</file>
+        <file>loading/14.png</file>
+        <file>loading/15.png</file>
+        <file>loading/16.png</file>
+        <file>loading/17.png</file>
+        <file>loading/18.png</file>
+        <file>loading/19.png</file>
+        <file>loading/20.png</file>
     </qresource>
 </RCC>

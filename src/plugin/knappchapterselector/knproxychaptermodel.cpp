@@ -15,11 +15,27 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
+#include "knchaptermodel.h"
+
 #include "knproxychaptermodel.h"
 
 KNProxyChapterModel::KNProxyChapterModel(QObject *parent) :
     QSortFilterProxyModel(parent)
 {
+}
+
+const ChapterUtil::ChapterData &KNProxyChapterModel::chapter(
+        int proxyIndex) const
+{
+    //Get source index.
+    QModelIndex sourceIndex=mapToSource(index(proxyIndex, 0));
+    //Get the original data.
+    if(sourceIndex.isValid())
+    {
+        return static_cast<KNChapterModel *>(sourceModel())->chapter(
+                    sourceIndex.row());
+    }
+    return m_nullData;
 }
 
 bool KNProxyChapterModel::lessThan(const QModelIndex &source_left,

@@ -54,6 +54,8 @@ KNMainWindow::KNMainWindow(QWidget *parent) : QMainWindow(parent),
     //Configure the boot layer.
     connect(m_bootLayer, &KNBootLayer::requireStartup,
             m_applicationLayer, &KNApplicationLayer::showAnimation);
+    connect(m_menuLayer, &KNMenuLayer::menuHideComplete,
+            m_applicationLayer, &KNApplicationLayer::setWidgetFocus);
     //Configure the applicaiton layer.
     m_applicationLayer->setFocusProxy(this);
     //Get the configure.

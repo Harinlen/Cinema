@@ -52,6 +52,13 @@ QVariant KNChapterModel::data(const QModelIndex &index, int role) const
     return QVariant();
 }
 
+const ChapterData &KNChapterModel::chapter(int index) const
+{
+    Q_ASSERT(index>-1 && index<m_chapterList.size());
+    //Simply get the chapter data.
+    return m_chapterList.at(index);
+}
+
 void KNChapterModel::setChapterList(const QList<ChapterData> &chapterList)
 {
     //Reset the model first.

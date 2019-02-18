@@ -43,7 +43,7 @@ KNMenuItem::KNMenuItem(QWidget *parent, const QString &text) :
     //Configure the font.
     QFont itemFont=font();
     itemFont.setFamily("SST Light");
-    itemFont.setPixelSize(31);
+    itemFont.setPixelSize(knDpi->height(31));
     setFont(itemFont);
     //Configure the animation.
     m_fadeAnimation->setUpdateInterval(16);

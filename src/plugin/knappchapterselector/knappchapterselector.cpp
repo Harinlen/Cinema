@@ -20,14 +20,24 @@
 
 #include "knappchapterselector.h"
 
+#include <QDebug>
+
 #define ChapterSelectorY    57
 
-KNAppChapterSelector::KNAppChapterSelector(QWidget *parent) : QWidget(parent),
+KNAppChapterSelector::KNAppChapterSelector(QWidget *parent) :
+    KNAppChapterSelectorBase(parent),
     m_chapterSelector(new KNChapterSelector(this))
 {
     //Set properties.
+    setFocusProxy(m_chapterSelector);
     //Configure the chapter selector.
     m_chapterSelector->move(knDpi->pos(0, ChapterSelectorY));
+}
+
+void KNAppChapterSelector::onLibraryPathChanged(const QString &libraryPath)
+{
+    //Change the library path of the chapter selector.
+    m_chapterSelector->setCurrentDir(libraryPath);
 }
 
 void KNAppChapterSelector::resizeEvent(QResizeEvent *event)

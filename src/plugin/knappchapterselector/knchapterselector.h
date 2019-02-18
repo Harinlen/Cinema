@@ -19,9 +19,14 @@
 #define KNCHAPTERSELECTOR_H
 
 #include <QDir>
+#include <QPixmap>
 #include <QThread>
 
+#include "knchapterutil.h"
+
 #include "knscrollarea.h"
+
+#define LoadingFrameCount   20
 
 class QTimeLine;
 class KNChapterSearcher;
@@ -84,6 +89,12 @@ signals:
      */
     void requireCancelSearch();
 
+    /*!
+     * \brief When item is selected, this signal will be emitted.
+     * \param indexChange The selected item index.
+     */
+    void itemSelected(int indexChange);
+
 public slots:
     /*!
      * \brief Set the current display directory.
@@ -126,6 +137,8 @@ protected:
 private slots:
     void retranslate();
     void onRowCountChange(int itemCount);
+    void onSearchComplete(const QList<ChapterUtil::ChapterData> &chapterList);
+    void startLoadDirectory();
 
 private:
     enum SelectorState
@@ -136,22 +149,32 @@ private:
         StateLoading,
         StateShowing
     };
-    inline void validAndMoveToCurrent();
-    inline void startHideAnimation();
+    void validAndMoveToCurrent();
+    void stopAllAnimations();
+    void startHideAnimation();
+    void startLoadingAnimation();
+    void startShowAnimation();
+    inline void selectCurrentItem();
     inline void updateParameters(int itemCount);
     inline int indexScrollBarValue(int index, ScrollHint hint);
     inline QRect itemContentRect(int index) const;
 
     QDir m_currentDir;
     QThread m_chapterSearchThread;
-    QString m_addDirHint;
+    QString m_addDirHint, m_loadingHint;
+    QFont m_hintTextFont, m_loadingFont, m_labelFont;
+    QLinearGradient m_titleGradient;
+    QPixmap m_loadingRing[LoadingFrameCount];
     KNChapterModel *m_chapterModel;
     KNProxyChapterModel *m_proxyChapterModel;
     KNChapterSearcher *m_chapterSearcher;
+    QTimer *m_loadingTimer;
 
     QTimeLine *m_scrollAnime, *m_hideAnimation;
-    int m_maxColumnCount, m_itemWidth, m_itemHeight, m_itemSpacing, m_startX,
-        m_currentIndex, m_currentState;
+    int m_maxColumnCount, m_itemWidth, m_itemHeight, m_itemSpacing,
+        m_borderWidth, m_startX, m_currentIndex, m_currentState, m_loadingIndex,
+        m_loadingWidth, m_textMargin;
+    bool m_repeat;
 };
 
 #endif // KNCHAPTERSELECTOR_H

@@ -22,6 +22,8 @@
 #include "knmainwindow.h"
 #include "knglobal.h"
 #include "knconfiguremanager.h"
+#include "knappchapterselectorbase.h"
+#include "knmenubase.h"
 
 #include "knmenubase.h"
 
@@ -31,7 +33,8 @@
 #include "knpluginmanager.h"
 
 KNPluginManager::KNPluginManager(QObject *parent) : QObject(parent),
-    m_mainWindow(nullptr)
+    m_mainWindow(nullptr),
+    m_chapterSelector(nullptr)
 {
     //Set the application information.
     setApplicationInformation();
@@ -55,8 +58,8 @@ void KNPluginManager::setMainWindow(KNMainWindow *mainWindow)
 
 void KNPluginManager::loadPlugins()
 {
-    m_mainWindow->appendAppWidget(new KNAppChapterSelector());
-    m_mainWindow->setMenuWidget(new KNLocationMenu());
+    loadChapterSelector(new KNAppChapterSelector());
+    loadLocationMenu(new KNLocationMenu());
 }
 
 void KNPluginManager::launchApplication()
@@ -85,4 +88,22 @@ inline void KNPluginManager::setApplicationInformation()
     QApplication::setOrganizationDomain("http://kreogist.github.io/");
     //Configure application attributes.
     QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps, true);
+}
+
+void KNPluginManager::loadChapterSelector(
+        KNAppChapterSelectorBase *chapterSelector)
+{
+    //Save the chapter selector.
+    m_chapterSelector=chapterSelector;
+    //Add the selector the main window.
+    m_mainWindow->appendAppWidget(m_chapterSelector);
+}
+
+void KNPluginManager::loadLocationMenu(KNMenuBase *locationMenu)
+{
+    //Link the location menu with the chapter selector.
+    connect(locationMenu, &KNMenuBase::libraryPathChanged,
+            m_chapterSelector, &KNAppChapterSelectorBase::onLibraryPathChanged);
+    //Add menu to main window.
+    m_mainWindow->setMenuWidget(locationMenu);
 }

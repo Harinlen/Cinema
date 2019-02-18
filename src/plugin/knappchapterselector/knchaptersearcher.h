@@ -18,6 +18,7 @@
 #ifndef KNCHAPTERSEARCHER_H
 #define KNCHAPTERSEARCHER_H
 
+#include <QMutex>
 #include <QSize>
 
 #include "knchapterutil.h"
@@ -43,6 +44,15 @@ public:
      * \return The cover target scaled size.
      */
     QSize coverSize() const;
+
+    /*!
+     * \brief Get whether the searcher is working.
+     * \return If the searcher is working, return true.
+     */
+    bool isWorking() const
+    {
+        return m_running;
+    }
 
 signals:
     /*!
@@ -71,12 +81,18 @@ public slots:
 
     /*!
      * \brief Cancel the thread running.
+     * \param Whether the cancel operation is done.
      */
-    void cancel();
+    bool cancel();
+
+    void lockState();
+
+    void unlockState();
 
 private:
     inline QPixmap loadCover(const QString &coverPath, const char *format);
     QSize m_coverSize;
+    QMutex m_lock;
     bool m_cancel, m_running;
 };
 

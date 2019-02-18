@@ -18,14 +18,14 @@
 #ifndef KNAPPCHAPTERSELECTOR_H
 #define KNAPPCHAPTERSELECTOR_H
 
-#include <QWidget>
+#include "knappchapterselectorbase.h"
 
 class KNChapterSelector;
 /*!
  * \brief The KNAppChapterSelector class provides the panel for the chapter
  * selector and handling the keyword search box.
  */
-class KNAppChapterSelector : public QWidget
+class KNAppChapterSelector : public KNAppChapterSelectorBase
 {
     Q_OBJECT
 public:
@@ -38,6 +38,11 @@ public:
 signals:
 
 public slots:
+    /*!
+     * \brief Reimplmented from
+     * KNAppChapterSelectorBase::onLibraryPathChanged().
+     */
+    void onLibraryPathChanged(const QString &libraryPath) override;
 
 protected:
     /*!

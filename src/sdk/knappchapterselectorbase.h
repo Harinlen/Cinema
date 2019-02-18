@@ -37,6 +37,11 @@ public:
 signals:
 
 public slots:
+    /*!
+     * \brief onLibraryPathChanged
+     * \param libraryPath
+     */
+    virtual void onLibraryPathChanged(const QString &libraryPath)=0;
 };
 
 #endif // KNAPPCHAPTERSELECTORBASE_H

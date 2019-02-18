@@ -18,6 +18,8 @@
 #ifndef KNPROXYCHAPTERMODEL_H
 #define KNPROXYCHAPTERMODEL_H
 
+#include "knchapterutil.h"
+
 #include <QSortFilterProxyModel>
 
 /*!
@@ -28,7 +30,18 @@ class KNProxyChapterModel : public QSortFilterProxyModel
 {
     Q_OBJECT
 public:
+    /*!
+     * \brief Construct a KNProxyChapterModel model
+     * \param parent The parent object.
+     */
     explicit KNProxyChapterModel(QObject *parent = nullptr);
+
+    /*!
+     * \brief Get the chapter information by providing its proxy index.
+     * \param proxyIndex The chapter proxy index.
+     * \return The chapter data.
+     */
+    const ChapterUtil::ChapterData &chapter(int proxyIndex) const;
 
 signals:
 
@@ -48,6 +61,7 @@ protected:
                           const QModelIndex &source_parent) const override;
 
 private:
+    ChapterUtil::ChapterData m_nullData;
     QString m_keyword;
 };
 

@@ -224,6 +224,8 @@ void KNLocationMenu::keyPressEvent(QKeyEvent *event)
         {
             //Set the hover item as the selected item.
             setCurrentIndex(m_currentHover-1);
+            //Play the okay audio
+            knAudio->play(KNAudioManager::AudioOk);
         }
         //Hide the menu.
         emit requireHideMenu();

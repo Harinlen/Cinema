@@ -31,8 +31,10 @@ KNChapterSearcher::KNChapterSearcher(QObject *parent) : QObject(parent),
 void KNChapterSearcher::search(const QString &dirPath)
 {
     //Clear the cancel flag and set the running flag.
+    m_lock.lock();
     m_cancel=false;
     m_running=true;
+    m_lock.unlock();
     //Get the sub dir list.
     QDir libraryDir(dirPath);
     QFileInfoList directoryList=libraryDir.entryInfoList();
@@ -43,6 +45,7 @@ void KNChapterSearcher::search(const QString &dirPath)
     for(auto i : directoryList)
     {
         //Check the cancel flag.
+        m_lock.lock();
         if(m_cancel)
         {
             //Cancel the operation.
@@ -50,8 +53,12 @@ void KNChapterSearcher::search(const QString &dirPath)
             //Reset the flags.
             m_running=false;
             m_cancel=false;
+            //Remove the lock.
+            m_lock.unlock();
+            //Mission complete.
             return;
         }
+        m_lock.unlock();
         //Check the directory.
         if(i.fileName()=="." || i.fileName()==".." || !i.isDir())
         {
@@ -82,8 +89,10 @@ void KNChapterSearcher::search(const QString &dirPath)
     //After all the chapter added, emit the finish signal.
     emit searchComplete(chapterList);
     //Reset the running and cancel flag.
+    m_lock.lock();
     m_running=false;
     m_cancel=false;
+    m_lock.unlock();
 }
 
 QSize KNChapterSearcher::coverSize() const
@@ -96,14 +105,32 @@ void KNChapterSearcher::setCoverSize(const QSize &coverSize)
     m_coverSize = coverSize;
 }
 
-void KNChapterSearcher::cancel()
+bool KNChapterSearcher::cancel()
 {
+    //Lock the state.
+    m_lock.lock();
     //Check the running state.
     if(m_running)
     {
         //Set the cancel flag.
         m_cancel=true;
     }
+    bool needCancel=m_cancel;
+    //Remove the lock
+    m_lock.unlock();
+    return needCancel;
+}
+
+void KNChapterSearcher::lockState()
+{
+    //Start locking the state.
+    m_lock.lock();
+}
+
+void KNChapterSearcher::unlockState()
+{
+    //Unlock the state.
+    m_lock.unlock();
 }
 
 QPixmap KNChapterSearcher::loadCover(const QString &coverPath,
@@ -116,10 +143,19 @@ QPixmap KNChapterSearcher::loadCover(const QString &coverPath,
         if(!coverImage.isNull())
         {
             //Scale the image to our size.
-            return coverImage.scaled(
+            QPixmap scaledImage=coverImage.scaled(
                         m_coverSize,
                         Qt::KeepAspectRatioByExpanding,
                         Qt::SmoothTransformation);
+            if(scaledImage.size()!=m_coverSize)
+            {
+                scaledImage=scaledImage.copy(
+                            (scaledImage.width()-m_coverSize.width())>>1,
+                            (scaledImage.height()-m_coverSize.height())>>1,
+                            m_coverSize.width(),
+                            m_coverSize.height());
+            }
+            return scaledImage;
         }
     }
     return QPixmap();

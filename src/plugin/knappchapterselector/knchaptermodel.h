@@ -46,6 +46,13 @@ public:
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const
     override;
 
+    /*!
+     * \brief Get the chapter data.
+     * \param index The chapter index data.
+     * \return The chapter information.
+     */
+    const ChapterUtil::ChapterData &chapter(int index) const;
+
 signals:
     /*!
      * \brief When the row count is changed, this signal will be emitted.

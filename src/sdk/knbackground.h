@@ -18,17 +18,14 @@
 #ifndef KNBACKGROUND_H
 #define KNBACKGROUND_H
 
-#include <QGraphicsView>
+#include <QWidget>
 
 class QLabel;
-class QGraphicsVideoItem;
-class QMediaPlayer;
-class QMediaPlaylist;
 /*!
  * \brief The KNBackground class provides the ability for displaying an image or
  * a video as the background.
  */
-class KNBackground : public QGraphicsView
+class KNBackground : public QWidget
 {
     Q_OBJECT
 public:
@@ -55,16 +52,23 @@ public slots:
 
 protected:
     /*!
+     * \brief Reimplemented from QWidget::paintEvent().
+     */
+    void paintEvent(QPaintEvent *event) override;
+
+    /*!
      * \brief Reimplemented from QWidget::resizeEvent().
      */
     void resizeEvent(QResizeEvent *event) override;
 
 private:
-    QGraphicsScene *m_scene;
-    QGraphicsVideoItem *m_videoDisplay;
-    QLabel *m_imageDisplay;
-    QMediaPlaylist *m_videoLoopList;
-    QMediaPlayer *m_videoPlayer;
+    inline void updateStreamSize();
+    QPixmap m_defaultBackground;
+    QHash<int, QPixmap> m_scaledMap;
+    QPixmap m_frame, m_scaledFrame;
+    QStringList m_frameNameList;
+    QTimer *m_videoTimer;
+    int m_frameIndex;
 };
 
 #endif // KNBACKGROUND_H
